@@ -1,0 +1,10 @@
+// Prisma 7 schema for AI Training System
+// In Prisma 7, connection URLs are configured in prisma.config.js
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
