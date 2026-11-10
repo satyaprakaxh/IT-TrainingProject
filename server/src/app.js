@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const prisma = require('./config/db');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
+
+app.use('/api/auth', authRoutes);
 
 // Backend health check
 app.get('/', (req, res) => {
@@ -28,16 +31,13 @@ app.get('/', (req, res) => {
 app.get('/api/health/db', async (req, res) => {
     try {
         await prisma.$queryRaw`SELECT 1`;
-
         res.status(200).json({
             success: true,
             status: 'Connected',
             message: 'PostgreSQL database connected successfully'
         });
-
     } catch (error) {
         console.error('Database connection error:', error.message);
-
         res.status(500).json({
             success: false,
             status: 'Disconnected',

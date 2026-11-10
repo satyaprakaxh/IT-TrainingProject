@@ -79,6 +79,20 @@
   color: #554276;
 }
 
+.profile-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2dce6;
+  background: transparent;
+  color: #494052;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.profile-btn:hover {
+  background: #f3f0f6;
+}
+
 .page-content {
   padding: 35px;
 }
