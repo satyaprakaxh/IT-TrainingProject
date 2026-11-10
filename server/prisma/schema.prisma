@@ -1,10 +1,588 @@
 // Prisma 7 schema for AI Training System
 // In Prisma 7, connection URLs are configured in prisma.config.js
 
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ================================
+// ENUMS
+// ================================
+
+enum UserRole {
+  EMPLOYEE
+  TRAINER
+  ADMIN
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LearningPathStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  ENROLLED
+  IN_PROGRESS
+  COMPLETED
+  DROPPED
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum AssessmentType {
+  INITIAL
+  COURSE
+  FINAL
+  PRACTICE
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EVALUATED
+}
+
+enum RecommendationType {
+  COURSE
+  SKILL
+  LESSON
+}
+
+enum RecommendationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+enum AIGenerationType {
+  COURSE
+  LESSON
+  QUIZ
+  EXPLANATION
+  RECOMMENDATION
+  SKILL_ANALYSIS
+}
+
+enum GenerationStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ================================
+// USER AND DEPARTMENT
+// ================================
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(EMPLOYEE)
+
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  createdCourses      Course[] @relation("CourseCreator")
+  createdAssessments  Assessment[] @relation("AssessmentCreator")
+
+  userSkills          UserSkill[]
+  learningPaths       LearningPath[]
+  enrollments         Enrollment[]
+  lessonProgress      LessonProgress[]
+  assessmentAttempts  AssessmentAttempt[]
+  recommendations     Recommendation[]
+  certificates        Certificate[]
+  skillGapAnalyses    SkillGapAnalysis[]
+  adaptiveProfile     AdaptiveProfile?
+  aiGenerations       AIGeneration[]
+  activityLogs        ActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([departmentId])
+  @@index([role])
+}
+
+model Department {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String?
+
+  users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ================================
+// SKILLS
+// ================================
+
+model Skill {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String?
+  category    String?
+
+  userSkills     UserSkill[]
+  courseSkills   CourseSkill[]
+  recommendations Recommendation[]
+
+  createdAt DateTime @default(now())
+}
+
+model UserSkill {
+  id     Int @id @default(autoincrement())
+
+  userId  Int
+  skillId Int
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  level       SkillLevel @default(BEGINNER)
+  score       Float      @default(0)
+  assessedAt  DateTime   @default(now())
+
+  @@unique([userId, skillId])
+  @@index([skillId])
+}
+
+// ================================
+// COURSES
+// ================================
+
+model Course {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String? @db.Text
+  category    String?
+
+  difficulty  DifficultyLevel @default(BEGINNER)
+  status      CourseStatus    @default(DRAFT)
+
+  estimatedDurationMinutes Int?
+
+  createdById Int?
+  createdBy   User? @relation("CourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  lessons          Lesson[]
+  courseSkills     CourseSkill[]
+  learningPathItems LearningPathItem[]
+  enrollments      Enrollment[]
+  assessments      Assessment[]
+  recommendations Recommendation[]
+  certificates     Certificate[]
+  aiGenerations    AIGeneration[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([difficulty])
+}
+
+model CourseSkill {
+  id       Int @id @default(autoincrement())
+  courseId Int
+  skillId  Int
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  skill  Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, skillId])
+}
+
+model Lesson {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String? @db.Text
+  content     String? @db.Text
+
+  position    Int
+  durationMinutes Int?
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  progressRecords LessonProgress[]
+  assessments     Assessment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, position])
+  @@index([courseId])
+}
+
+// ================================
+// PERSONALIZED LEARNING PATHS
+// ================================
+
+model LearningPath {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String? @db.Text
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status       LearningPathStatus @default(ACTIVE)
+  generatedByAI Boolean           @default(true)
+
+  items LearningPathItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+}
+
+model LearningPathItem {
+  id             Int @id @default(autoincrement())
+  learningPathId Int
+  courseId       Int
+  position       Int
+
+  learningPath LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  course       Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([learningPathId, courseId])
+  @@unique([learningPathId, position])
+}
+
+// ================================
+// COURSE ENROLLMENTS
+// ================================
+
+model Enrollment {
+  id       Int @id @default(autoincrement())
+
+  userId   Int
+  courseId Int
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  status      EnrollmentStatus @default(ENROLLED)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+  @@index([courseId, status])
+}
+
+// ================================
+// LESSON PROGRESS
+// ================================
+
+model LessonProgress {
+  id       Int @id @default(autoincrement())
+
+  userId   Int
+  lessonId Int
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  status             ProgressStatus @default(NOT_STARTED)
+  progressPercentage Float          @default(0)
+  timeSpentSeconds   Int            @default(0)
+  completedAt        DateTime?
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([lessonId])
+}
+
+// ================================
+// ASSESSMENTS AND QUESTIONS
+// ================================
+
+model Assessment {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String? @db.Text
+
+  type        AssessmentType
+  difficulty  DifficultyLevel @default(BEGINNER)
+
+  passingScore     Float @default(60)
+  timeLimitMinutes Int?
+
+  courseId Int?
+  course   Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessonId Int?
+  lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  createdById Int?
+  createdBy   User? @relation("AssessmentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  questions Question[]
+  attempts  AssessmentAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([courseId])
+}
+
+model Question {
+  id           Int @id @default(autoincrement())
+  assessmentId Int
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  questionText String @db.Text
+  type         QuestionType
+  difficulty   DifficultyLevel @default(BEGINNER)
+
+  points      Float @default(1)
+  explanation String? @db.Text
+  correctAnswer String? @db.Text
+
+  options   QuestionOption[]
+  responses QuestionResponse[]
+
+  createdAt DateTime @default(now())
+
+  @@index([assessmentId])
+}
+
+model QuestionOption {
+  id         Int @id @default(autoincrement())
+  questionId Int
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  optionText String
+  isCorrect  Boolean @default(false)
+
+  responses QuestionResponse[]
+}
+
+// ================================
+// ASSESSMENT ATTEMPTS
+// ================================
+
+model AssessmentAttempt {
+  id           Int @id @default(autoincrement())
+  userId       Int
+  assessmentId Int
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  score        Float?
+  totalPoints  Float?
+  earnedPoints Float?
+  passed       Boolean?
+
+  status          AttemptStatus @default(IN_PROGRESS)
+  durationSeconds Int           @default(0)
+
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+
+  responses       QuestionResponse[]
+  skillGapAnalysis SkillGapAnalysis?
+
+  @@index([userId, assessmentId])
+}
+
+model QuestionResponse {
+  id        Int @id @default(autoincrement())
+  attemptId Int
+  questionId Int
+
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  selectedOptionId Int?
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+
+  answerText    String? @db.Text
+  isCorrect     Boolean?
+  pointsAwarded Float   @default(0)
+
+  @@unique([attemptId, questionId])
+}
+
+// ================================
+// AI SKILL GAP ANALYSIS
+// ================================
+
+model SkillGapAnalysis {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  attemptId Int @unique
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  summary       String  @db.Text
+  strengths     Json
+  weaknesses    Json
+  recommendedTopics Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ================================
+// ADAPTIVE LEARNING PROFILE
+// ================================
+
+model AdaptiveProfile {
+  id     Int @id @default(autoincrement())
+  userId Int @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  preferredDifficulty DifficultyLevel @default(BEGINNER)
+
+  learningPace  String?
+  learningStyle String?
+
+  averageScore Float @default(0)
+  lastAnalyzedAt DateTime?
+
+  updatedAt DateTime @updatedAt
+}
+
+// ================================
+// AI RECOMMENDATIONS
+// ================================
+
+model Recommendation {
+  id     Int @id @default(autoincrement())
+  userId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type RecommendationType
+
+  courseId Int?
+  course   Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  skillId Int?
+  skill   Skill? @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  reason          String @db.Text
+  confidenceScore Float?
+
+  status RecommendationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, status])
+}
+
+// ================================
+// CERTIFICATES
+// ================================
+
+model Certificate {
+  id       Int @id @default(autoincrement())
+  userId   Int
+  courseId Int
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  certificateCode String   @unique
+  issuedAt        DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+// ================================
+// AI GENERATION HISTORY
+// ================================
+
+model AIGeneration {
+  id Int @id @default(autoincrement())
+
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  courseId Int?
+  course   Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  type AIGenerationType
+
+  prompt   String @db.Text
+  response Json?
+
+  provider String?
+  model    String?
+
+  status GenerationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+
+  @@index([type, status])
+}
+
+// ================================
+// ACTIVITY LOGS
+// ================================
+
+model ActivityLog {
+  id     Int @id @default(autoincrement())
+  userId Int?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action      String
+  description String? @db.Text
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
