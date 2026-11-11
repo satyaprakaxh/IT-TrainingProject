@@ -1,3 +1,23 @@
+/* Add this once in index.html <head>:
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+*/
+
+:root {
+  --mint: #c9e6d6;          /* big green panel on login page */
+  --mint-soft: #e3f2ea;
+  --green: #6f9a68;         /* "Forgot Password?" / "Register now" links */
+  --green-dark: #3f7a4f;    /* icon tiles */
+  --ink: #0b0b0b;           /* black Login button + headings */
+  --text: #3a3a3a;
+  --muted: #8a8f8c;
+  --bg: #f4f6f4;
+  --card: #ffffff;
+  --border: #e3e6e3;
+  --radius-lg: 28px;
+  --radius-md: 16px;
+  --radius-pill: 14px;
+  --shadow: 0 10px 40px rgba(40, 70, 50, 0.08);
+}
 
 * {
   box-sizing: border-box;
@@ -6,40 +26,56 @@
 .app-layout {
   display: flex;
   min-height: 100vh;
-  background: #f7f5f2;
-  color: #353044;
-  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Poppins", Arial, sans-serif;
 }
 
+/* ---------- Sidebar: mint panel like the login illustration side ---------- */
 .sidebar {
-  width: 240px;
+  width: 250px;
   min-height: 100vh;
-  padding: 30px 20px;
-  background: #e9e2f3;
+  padding: 32px 20px;
+  background: var(--mint);
+  border-top-right-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
 }
 
 .sidebar h2 {
-  margin-bottom: 40px;
-  color: #554276;
+  margin: 0 0 40px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ink);
 }
 
 .sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sidebar nav a {
-  padding: 13px;
-  border-radius: 8px;
-  color: #494052;
+  padding: 13px 16px;
+  border-radius: var(--radius-pill);
+  color: #2f4a38;
+  font-weight: 500;
   text-decoration: none;
+  transition: background 0.2s, color 0.2s;
 }
 
 .sidebar nav a:hover {
-  background: #d9cbea;
+  background: rgba(255, 255, 255, 0.65);
 }
 
+.sidebar nav a.active {
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(40, 70, 50, 0.08);
+}
+
+/* ---------- Main area ---------- */
 .main-content {
   flex: 1;
   min-width: 0;
@@ -49,18 +85,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 22px 35px;
-  background: white;
-  border-bottom: 1px solid #eee8f2;
+  margin: 24px 35px 0;
+  padding: 22px 30px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 
 .header h2 {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ink);
 }
 
 .header p {
   margin: 0;
-  color: #81798a;
+  color: var(--muted);
 }
 
 .profile {
@@ -70,31 +113,93 @@
 }
 
 .profile-icon {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #e9e2f3;
-  color: #554276;
+  background: var(--green-dark);
+  color: #fff;
+  font-weight: 600;
 }
 
+/* Same style as the black Login button */
 .profile-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #e2dce6;
-  background: transparent;
-  color: #494052;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: #fff;
+  font-family: inherit;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .profile-btn:hover {
-  background: #f3f0f6;
+  background: #2a2a2a;
+}
+
+.profile-btn:focus-visible,
+.sidebar nav a:focus-visible {
+  outline: 2px solid var(--green-dark);
+  outline-offset: 2px;
 }
 
 .page-content {
   padding: 35px;
+}
+
+/* ---------- Optional: card style like "JavaScript Training / Learning Progress" ---------- */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--green-dark);
+  color: #fff;
+}
+
+.card h4 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.card small {
+  color: var(--muted);
+}
+
+.progress {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+
+a.link-green {
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 @media (max-width: 650px) {
@@ -104,7 +209,8 @@
   }
 
   .header {
-    padding: 18px;
+    margin: 16px 18px 0;
+    padding: 16px 18px;
   }
 
   .page-content {
