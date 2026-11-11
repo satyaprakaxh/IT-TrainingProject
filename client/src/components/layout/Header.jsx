@@ -13,8 +13,9 @@ export default function Header() {
     try {
       await authService.logout();
     } catch (err) {
-      // Ignore logout errors; clear local state regardless
+      // Clear local state even if logout request fails
     }
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');
@@ -22,15 +23,16 @@ export default function Header() {
 
   return (
     <header className="header">
-      <div>
-        <h2>Welcome Back, {user.name || 'Student'}!</h2>
-        <p>Continue your learning journey.</p>
+      <div className="header-brand">
+        <h2>SkillPath AI</h2>
       </div>
 
       <div className="profile">
-        <span>{user.name || 'Student'}</span>
-        <button className="profile-btn" onClick={handleLogout}>Logout</button>
+        <span>Hello, {user.name || 'Student'}!</span>
         <div className="profile-icon">{initial}</div>
+        <button className="profile-btn" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
     </header>
   );
