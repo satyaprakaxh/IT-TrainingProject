@@ -10,8 +10,15 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Assessment from './pages/Assessment';
+import AssessmentInstructions from './pages/AssessmentInstructions';
+import AssessmentAttempt from './pages/AssessmentAttempt';
+import AssessmentResult from './pages/AssessmentResult';
+import AssessmentHistory from './pages/AssessmentHistory';
 import Courses from './pages/Courses';
 import Progress from './pages/Progress';
+
+// Import shared assessment styles
+import './components/assessment/assessment.css';
 
 // Check if the user is authenticated
 const isAuthenticated = () => !!localStorage.getItem('token');
@@ -87,6 +94,46 @@ export default function App() {
             <PrivateRoute>
               <AppShell>
                 <Assessment />
+              </AppShell>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/assessment/instructions/:id"
+          element={
+            <PrivateRoute>
+              <AppShell>
+                <AssessmentInstructions />
+              </AppShell>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/assessment/attempt/:id"
+          element={
+            <PrivateRoute>
+              <AppShell>
+                <AssessmentAttempt />
+              </AppShell>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/assessment/result/:attemptId"
+          element={
+            <PrivateRoute>
+              <AppShell>
+                <AssessmentResult />
+              </AppShell>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/assessment/history"
+          element={
+            <PrivateRoute>
+              <AppShell>
+                <AssessmentHistory />
               </AppShell>
             </PrivateRoute>
           }
