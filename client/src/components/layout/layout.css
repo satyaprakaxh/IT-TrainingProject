@@ -217,3 +217,46 @@ a.link-green {
     padding: 20px;
   }
 }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.header-effects {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-control {
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bubble-control {
+  background: #edf2e9;
+  color: #647d5c;
+  border-color: #dce7d6;
+}
+
+.bubble-control.active {
+  background: #829b75;
+  color: white;
+}
+
+.theme-control {
+  background: #f0eaf5;
+  color: #80649a;
+  border-color: #e3d8ed;
+}
+
+.header-control:hover {
+  transform: translateY(-1px);
+}

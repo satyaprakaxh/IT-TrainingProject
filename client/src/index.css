@@ -1,27 +1,167 @@
-/* Global base reset */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+
+/* =================================
+   GLOBAL THEME VARIABLES
+================================= */
+
+:root,
+:root[data-theme="light"] {
+  --page-bg: #f8f7f4;
+  --surface-bg: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #777777;
+  --border-color: #e8e5df;
+  --card-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
 }
 
-html {
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
+:root[data-theme="dark"] {
+  --page-bg: #1e2028;
+  --surface-bg: #292c36;
+  --text-primary: #f2f0f7;
+  --text-secondary: #c0bdca;
+  --border-color: #414451;
+  --card-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* =================================
+   GLOBAL STYLES
+================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
 }
 
 body {
-  font-family: 'Poppins', Arial, sans-serif;
-  background: #ffffff;
-  color: #080808;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-a { color: inherit; }
+/* =================================
+   DASHBOARD LAYOUT
+================================= */
 
-button, input, select, textarea {
-  font-family: inherit;
+.app-layout,
+.main-content,
+.page-content {
+  background-color: var(--page-bg);
+  color: var(--text-primary);
 }
 
+/* =================================
+   HEADER AND SIDEBAR
+================================= */
+
+.header,
+.sidebar {
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* =================================
+   CARDS AND PANELS
+================================= */
+
+.dashboard-card,
+.stat-card,
+.course-card,
+.assessment-card,
+.progress-card {
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+/* =================================
+   TEXT
+================================= */
+
+h1,
+h2,
+h3,
+h4,
+p,
+span,
+label,
+li {
+  color: inherit;
+}
+
+.text-secondary,
+.subtitle,
+.description {
+  color: var(--text-secondary);
+}
+
+/* =================================
+   FORM ELEMENTS
+================================= */
+
+input,
+textarea,
+select {
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* =================================
+   SMOOTH THEME TRANSITION
+================================= */
+
+body,
+.header,
+.sidebar,
+.app-layout,
+.main-content,
+.page-content,
+.dashboard-card,
+.stat-card,
+.course-card,
+.assessment-card,
+.progress-card {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =================================
+   SIDEBAR NAVIGATION - DARK MODE
+================================= */
+
+:root[data-theme="dark"] .sidebar nav a {
+  color: #d1d5db;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Hover */
+:root[data-theme="dark"] .sidebar nav a:hover {
+  color: #ffffff;
+  background-color: #3b3e4b;
+}
+
+/* Keyboard accessibility */
+:root[data-theme="dark"] .sidebar nav a:focus-visible {
+  color: #ffffff;
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+
+/* Active navigation link, when marked active */
+:root[data-theme="dark"] .sidebar nav a.active,
+:root[data-theme="dark"] .sidebar nav a[aria-current="page"] {
+  color: #ffffff;
+  background-color: #414451;
+  font-weight: 600;
+}

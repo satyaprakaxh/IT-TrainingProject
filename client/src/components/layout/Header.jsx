@@ -3,7 +3,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 
-export default function Header() {
+export default function Header({
+  bubblesEnabled,
+  onToggleBubbles,
+  theme,
+  onToggleTheme
+}) {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -23,16 +28,50 @@ export default function Header() {
 
   return (
     <header className="header">
+
       <div className="header-brand">
         <h2>SkillPath AI</h2>
       </div>
 
-      <div className="profile">
-        <span>Hello, {user.name || 'Student'}!</span>
-        <div className="profile-icon">{initial}</div>
-        <button className="profile-btn" onClick={handleLogout}>
-          Logout
-        </button>
+      <div className="header-actions">
+
+        <div className="header-effects">
+          <button
+            type="button"
+            className={`header-control bubble-control ${
+              bubblesEnabled ? 'active' : ''
+            }`}
+            onClick={onToggleBubbles}
+            aria-pressed={bubblesEnabled}
+          >
+            🫧 {bubblesEnabled ? 'Bubbles ON' : 'Bubbles OFF'}
+          </button>
+
+          <button
+            type="button"
+            className="header-control theme-control"
+            onClick={onToggleTheme}
+          >
+            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          </button>
+        </div>
+
+        {/* Original profile section */}
+        <div className="profile">
+          <span>Hello, {user.name || 'Student'}!</span>
+
+          <div className="profile-icon">
+            {initial}
+          </div>
+
+          <button
+            className="profile-btn"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
+
       </div>
     </header>
   );

@@ -1,6 +1,11 @@
 
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom';
 
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -17,27 +22,68 @@ import AssessmentHistory from './pages/AssessmentHistory';
 import Courses from './pages/Courses';
 import Progress from './pages/Progress';
 
-// Check if the user is authenticated
+import FloatingBubbles from './components/effects/FloatingBubbles';
+
+// Check authentication
 const isAuthenticated = () => !!localStorage.getItem('token');
 
 // Protect private routes
 function PrivateRoute({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+  return isAuthenticated()
+    ? children
+    : <Navigate to="/login" replace />;
 }
 
 // Redirect logged-in users away from login/register
 function PublicOnlyRoute({ children }) {
-  return isAuthenticated() ? <Navigate to="/dashboard" replace /> : children;
+  return isAuthenticated()
+    ? <Navigate to="/dashboard" replace />
+    : children;
 }
 
 // Common layout for protected pages
 function AppShell({ children }) {
+  // Load saved bubble preference
+  const [bubblesEnabled, setBubblesEnabled] = useState(
+    () => localStorage.getItem('bubbles-enabled') !== 'false'
+  );
+
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem('dashboard-theme') || 'light'
+  );
+
+  // Save bubble setting whenever it changes
+  useEffect(() => {
+    localStorage.setItem('bubbles-enabled', String(bubblesEnabled));
+  }, [bubblesEnabled]);
+
+  // Apply and save selected theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('dashboard-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((current) =>
+      current === 'light' ? 'dark' : 'light'
+    );
+  };
+
   return (
     <div className="app-layout">
+      {bubblesEnabled && <FloatingBubbles />}
+
       <Sidebar />
 
       <div className="main-content">
-        <Header />
+        <Header
+          bubblesEnabled={bubblesEnabled}
+          onToggleBubbles={() =>
+            setBubblesEnabled((prev) => !prev)
+          }
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
 
         <main className="page-content">
           {children}
@@ -47,12 +93,12 @@ function AppShell({ children }) {
   );
 }
 
+// Main application
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Login */}
         <Route
           path="/login"
           element={
@@ -62,7 +108,6 @@ export default function App() {
           }
         />
 
-        {/* Register */}
         <Route
           path="/register"
           element={
@@ -72,7 +117,6 @@ export default function App() {
           }
         />
 
-        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -84,7 +128,6 @@ export default function App() {
           }
         />
 
-        {/* Assessment */}
         <Route
           path="/assessment"
           element={
@@ -95,6 +138,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/assessment/instructions/:id"
           element={
@@ -105,6 +149,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/assessment/attempt/:id"
           element={
@@ -115,6 +160,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/assessment/result/:attemptId"
           element={
@@ -125,6 +171,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/assessment/history"
           element={
@@ -136,7 +183,6 @@ export default function App() {
           }
         />
 
-        {/* Courses */}
         <Route
           path="/courses"
           element={
@@ -148,7 +194,6 @@ export default function App() {
           }
         />
 
-        {/* Progress */}
         <Route
           path="/progress"
           element={
@@ -160,15 +205,9 @@ export default function App() {
           }
         />
 
-        {/* Default route */}
         <Route
           path="*"
-          element={
-            <Navigate
-              to={isAuthenticated() ? '/dashboard' : '/login'}
-              replace
-            />
-          }
+          element={<Navigate to="/dashboard" replace />}
         />
 
       </Routes>
