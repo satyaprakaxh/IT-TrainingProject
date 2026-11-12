@@ -7,8 +7,9 @@ require('dotenv').config();
 const prisma = require('./config/db');
 
 const authRoutes = require('./routes/auth.routes');
+const courseRoutes = require('./routes/course.routes');
+const assessmentRoutes = require('./routes/assessment.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
-const coursesRoutes = require('./routes/courses.routes');
 
 const app = express();
 
@@ -29,8 +30,9 @@ app.use(cookieParser());
 // ==========================================
 
 app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/assessments', assessmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/courses', coursesRoutes);
 
 // ==========================================
 // BACKEND HEALTH CHECK
