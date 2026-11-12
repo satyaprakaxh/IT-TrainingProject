@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { assessmentService } from '../services/assessment.service';
 
+import { BookOpen, Clock, Target, Play } from 'lucide-react';
+
+import './Assessment.css';
+
 export default function AssessmentInstructions() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,7 +33,7 @@ export default function AssessmentInstructions() {
 
   if (loading) {
     return (
-      <div className="assess-page">
+      <div className="assess-container">
         <div className="assess-empty">
           <div className="assess-skeleton-text wide" />
           <div className="assess-skeleton-text" style={{ width: '60%' }} />
@@ -41,10 +45,7 @@ export default function AssessmentInstructions() {
 
   if (error || !assessment) {
     return (
-      <div className="assess-page">
-        <div className="assess-page-header">
-          <h1>Assessment</h1>
-        </div>
+      <div className="assess-container">
         <div className="assess-error">{error || 'Assessment not found.'}</div>
         <div style={{ textAlign: 'center', marginTop: 30 }}>
           <Link to="/assessment" className="assess-btn-ghost">
@@ -62,31 +63,41 @@ export default function AssessmentInstructions() {
   const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
 
   return (
-    <div className="assess-page">
-      <div className="assess-page-header">
+    <div className="assess-container">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <Link to="/assessment" className="assess-btn-ghost">
           ← Back to Assessments
         </Link>
         <div>
-          <h1>{assessment.title}</h1>
-          <p>{assessment.description || 'No description provided.'}</p>
+          <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, color: '#202820' }}>{assessment.title}</h1>
+          <p style={{ margin: '4px 0 0', color: '#607066' }}>{assessment.description || 'No description provided.'}</p>
         </div>
       </div>
 
-      <div className="assess-card" style={{ maxWidth: 720, margin: '0 auto' }}>
-        <div style={{ padding: '30px 34px 24px' }}>
-          <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
+      <div className="assess-card" style={{ maxWidth: 820, margin: '0 auto' }}>
+        <div style={{ padding: '22px' }}>
+          <div className="assess-section-heading">
+            <div>
+              <h3>Assessment Details</h3>
+              <p>Review the information before you begin.</p>
+            </div>
+            <div className="assess-welcome-icon" style={{ padding: '14px' }}>
+              <BookOpen size={22} />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
             <span className="assess-card-detail">
-              📚 {assessment.course?.title || 'General Course'}
+              <BookOpen size={14} /> {assessment.course?.title || 'General Course'}
             </span>
             <span className="assess-card-detail">
-              ⚡ {assessment.difficulty.charAt(0) + assessment.difficulty.slice(1).toLowerCase()}
+              <Target size={14} /> {assessment.difficulty.charAt(0) + assessment.difficulty.slice(1).toLowerCase()}
             </span>
             <span className="assess-card-detail">
-              ❓ {questions.length} questions
+              <Clock size={14} /> {questions.length} questions
             </span>
             <span className="assess-card-detail">
-              ⏱️ {durationText}
+              {durationText}
             </span>
             <span className="assess-card-detail">
               💯 {totalPoints} total marks
@@ -96,49 +107,48 @@ export default function AssessmentInstructions() {
             </span>
           </div>
 
-          <h3 style={{ margin: '0 0 12px', fontSize: 16, color: '#0b0b0b' }}>
-            Instructions & Rules
-          </h3>
-          <ul style={{ color: '#3a3a3a', lineHeight: 1.8, marginBottom: 24 }}>
-            <li>
-              Read each question carefully before selecting your answer.
-            </li>
-            <li>
-              You can navigate between questions using Previous / Next or the
-              question panel.
-            </li>
-            <li>
-              Mark questions for review and return to them before submitting.
-            </li>
-            <li>
-              Your answers are saved automatically as you move between
-              questions.
-            </li>
-            <li>
-              {totalMinutes > 0
-                ? `A countdown timer of ${totalMinutes} minutes will run. The assessment auto-submits when time expires.`
-                : 'There is no time limit for this assessment.'}
-            </li>
-            <li>
-              Correct answers and explanations are shown only after you submit.
-            </li>
-          </ul>
+          <div style={{ marginBottom: 20 }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: '#202820' }}>
+              Instructions & Rules
+            </h3>
+            <ul style={{ color: '#3a3a3a', lineHeight: 1.8, marginBottom: 0, paddingLeft: 20 }}>
+              <li>
+                Read each question carefully before selecting your answer.
+              </li>
+              <li>
+                You can navigate between questions using Previous / Next or the question panel.
+              </li>
+              <li>
+                Mark questions for review and return to them before submitting.
+              </li>
+              <li>
+                Your answers are saved automatically as you move between questions.
+              </li>
+              <li>
+                {totalMinutes > 0
+                  ? `A countdown timer of ${totalMinutes} minutes will run. The assessment auto-submits when time expires.`
+                  : 'There is no time limit for this assessment.'}
+              </li>
+              <li>
+                Correct answers and explanations are shown only after you submit.
+              </li>
+            </ul>
+          </div>
 
           <div
             style={{
-              background: '#e8f4ec',
+              background: '#e4f1e9',
               border: '1px solid #c9e6d6',
-              borderRadius: '12px',
+              borderRadius: 16,
               padding: '16px 20px',
-              marginBottom: 24
+              marginBottom: 20
             }}
           >
             <p style={{ margin: '0 0 8px', fontSize: 13, color: '#3f7a4f', fontWeight: 600 }}>
               Ready to begin?
             </p>
             <p style={{ margin: 0, fontSize: 14, color: '#3a3a3a' }}>
-              Click "Start Assessment" to begin your attempt. Once started, the
-              timer (if any) will begin immediately.
+              Click "Start Assessment" to begin your attempt. Once started, the timer (if any) will begin immediately.
             </p>
           </div>
 
@@ -150,7 +160,7 @@ export default function AssessmentInstructions() {
               className="assess-btn-primary"
               onClick={() => navigate(`/assessment/attempt/${assessment.id}`)}
             >
-              Start Assessment
+              <Play size={17} /> Start Assessment
             </button>
           </div>
         </div>

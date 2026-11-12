@@ -7,6 +7,10 @@ import React, {
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { assessmentService } from '../services/assessment.service';
 
+import { Clock, Play, Target, CheckCircle2, AlertCircle } from 'lucide-react';
+
+import './Assessment.css';
+
 export default function AssessmentAttempt() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -178,7 +182,7 @@ export default function AssessmentAttempt() {
 
   if (loading) {
     return (
-      <div className="assess-page">
+      <div className="assess-container">
         <div className="assess-empty">
           <div className="assess-skeleton-text wide" />
           <div className="assess-skeleton-text" style={{ width: '50%' }} />
@@ -189,10 +193,7 @@ export default function AssessmentAttempt() {
 
   if (error || !assessment) {
     return (
-      <div className="assess-page">
-        <div className="assess-page-header">
-          <h1>Assessment</h1>
-        </div>
+      <div className="assess-container">
         <div className="assess-error">{error || 'Assessment not found.'}</div>
         <div style={{ textAlign: 'center', marginTop: 30 }}>
           <Link to="/assessment" className="assess-btn-ghost">
@@ -211,7 +212,7 @@ export default function AssessmentAttempt() {
   const timeExpired = timerRunning === false && timeLeft == 0 && totalMinutes > 0;
 
   return (
-    <div className="assess-page">
+    <div className="assess-container">
       {/* Confirm dialog */}
       {showConfirm && (
         <div
@@ -225,17 +226,9 @@ export default function AssessmentAttempt() {
             zIndex: 50
           }}
         >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: '16px',
-              padding: '28px 32px',
-              maxWidth: 420,
-              textAlign: 'center',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.2)'
-            }}
-          >
-            <h2 style={{ margin: '0 0 10px', fontSize: 18, color: '#0b0b0b' }}>
+          <div className="assess-card" style={{ maxWidth: 420, textAlign: 'center', padding: '28px 32px' }}>
+            <AlertCircle size={32} style={{ color: '#d64545', marginBottom: 12 }} />
+            <h2 style={{ margin: '0 0 10px', fontSize: 18, fontWeight: 800, color: '#202820' }}>
               You have {unansweredCount} unanswered question{
                 unansweredCount !== 1 ? 's' : ''
               }.
@@ -264,47 +257,37 @@ export default function AssessmentAttempt() {
         </div>
       )}
 
-      <div className="assess-page-header">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <Link to="/assessment" className="assess-btn-ghost">
           ← Back to Assessments
         </Link>
         <div>
-          <h1>{assessment.title}</h1>
-          <p>
+          <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, color: '#202820' }}>{assessment.title}</h1>
+          <p style={{ margin: '4px 0 0', color: '#607066' }}>
             {assessment.course?.title || 'General Course'} •{' '}
-            {assessment.difficulty.charAt(0) +
-            assessment.difficulty.slice(1).toLowerCase()}
+            {assessment.difficulty.charAt(0) + assessment.difficulty.slice(1).toLowerCase()}
           </p>
         </div>
       </div>
 
       {/* Timer + progress bar */}
-      <div
-        className="assess-card"
-        style={{
-          padding: '14px 22px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          flexWrap: 'wrap',
-          marginBottom: 20
-        }}
-      >
+      <div className="assess-card" style={{ padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 13, color: '#8a8f8c' }}>Time Remaining</span>
+          <Clock size={16} style={{ color: '#849087' }} />
+          <span style={{ marginLeft: 6, fontSize: 13, color: '#849087' }}>Time Remaining</span>
           <span
             style={{
+              marginLeft: 12,
               fontSize: 22,
               fontWeight: 800,
-              color: timeLeft != null && timeLeft < 60 ? '#d64545' : '#0b0b0b',
+              color: timeLeft != null && timeLeft < 60 ? '#d64545' : '#202820',
               fontVariantNumeric: 'tabular-nums'
             }}
           >
             {formatTime(timeLeft)}
           </span>
         </div>
-        <div style={{ flex: 1, minWidth: 200, height: 8, background: '#e3e6e3', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ flex: 1, minWidth: 200, height: 10, background: '#edf1ed', borderRadius: 20, overflow: 'hidden' }}>
           <div
             style={{
               height: '100%',
@@ -312,7 +295,7 @@ export default function AssessmentAttempt() {
                 totalMinutes > 0
                   ? Math.max(0, ((timeLeft ?? totalMinutes * 60) / (totalMinutes * 60)) * 100)
                   : 100,
-              background: timeLeft != null && timeLeft < 60 ? '#d64545' : '#6f9a68',
+              background: timeLeft != null && timeLeft < 60 ? '#d64545' : '#5b9067',
               transition: 'width 1s linear'
             }}
           />
@@ -320,7 +303,7 @@ export default function AssessmentAttempt() {
         <div
           style={{
             fontSize: 13,
-            color: '#8a8f8c',
+            color: '#849087',
             whiteSpace: 'nowrap'
           }}
         >
@@ -336,14 +319,14 @@ export default function AssessmentAttempt() {
           marginBottom: 20
         }}
       >
-        <StatPill label="Answered" value={answeredCount} color="#6f9a68" />
+        <StatPill label="Answered" value={answeredCount} color="#3f7a4f" />
         <StatPill label="Unanswered" value={unansweredCount} color="#d64545" />
         <StatPill label="For Review" value={flaggedCount} color="#b58900" />
       </div>
 
       {/* Question card */}
       <div className="assess-card" style={{ minHeight: 320 }}>
-        <div style={{ padding: '26px 30px 20px' }}>
+        <div style={{ padding: '22px' }}>
           <div
             style={{
               display: 'flex',
@@ -359,7 +342,7 @@ export default function AssessmentAttempt() {
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: 0.6,
-                  color: '#8a8f8c',
+                  color: '#849087',
                   marginBottom: 4,
                   display: 'block'
                 }}
@@ -369,9 +352,9 @@ export default function AssessmentAttempt() {
               <h3
                 style={{
                   margin: 0,
-                  fontSize: 19,
+                  fontSize: 18,
                   fontWeight: 700,
-                  color: '#0b0b0b',
+                  color: '#202820',
                   lineHeight: 1.5
                 }}
               >
@@ -384,12 +367,20 @@ export default function AssessmentAttempt() {
               style={{
                 padding: '8px 14px',
                 fontSize: 12,
-                color: isFlagged ? '#b58900' : '#8a8f8c',
+                color: isFlagged ? '#b58900' : '#849087',
                 borderColor: isFlagged ? '#b58900' : '#e3e6e3',
                 background: isFlagged ? '#fff3e0' : 'transparent'
               }}
             >
-              {isFlagged ? '✓ Flagged' : 'Flag for Review'}
+              {isFlagged ? (
+                <>
+                  <CheckCircle2 size={14} /> Flagged
+                </>
+              ) : (
+                <>
+                  <AlertCircle size={14} /> Flag for Review
+                </>
+              )}
             </button>
           </div>
 
@@ -409,18 +400,17 @@ export default function AssessmentAttempt() {
                         gap: 12,
                         padding: '14px 18px',
                         border: `2px solid ${
-                          selected ? '#6f9a68' : '#e3e6e3'
+                          selected ? '#3f7a4f' : '#e3e6e3'
                         }`,
-                        borderRadius: 12,
-                        background: selected ? '#e8f4ec' : '#fff',
-                        color: '#0b0b0b',
+                        borderRadius: 14,
+                        background: selected ? '#e4f1e9' : 'white',
+                        color: '#202820',
                         fontSize: 15,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
                         textAlign: 'left',
-                        width: '100'
+                        width: '100%'
                       }}
-                      onMouseEnter={() => {}}
                     >
                       <span
                         style={{
@@ -428,12 +418,12 @@ export default function AssessmentAttempt() {
                           height: 24,
                           borderRadius: '50%',
                           border: `2px solid ${
-                            selected ? '#6f9a68' : '#8a8f8c'
+                            selected ? '#3f7a4f' : '#849087'
                           }`,
                           display: 'grid',
                           placeItems: 'center',
                           flexShrink: 0,
-                          background: selected ? '#6f9a68' : '#fff',
+                          background: selected ? '#3f7a4f' : 'white',
                           color: selected ? '#fff' : 'transparent',
                           fontWeight: 700,
                           fontSize: 12
@@ -456,10 +446,10 @@ export default function AssessmentAttempt() {
                     width: '100%',
                     padding: '14px 18px',
                     border: '1px solid #e3e6e3',
-                    borderRadius: 12,
+                    borderRadius: 14,
                     fontFamily: 'inherit',
                     fontSize: 15,
-                    color: '#0b0b0b',
+                    color: '#202820',
                     resize: 'vertical'
                   }}
                   placeholder="Type your answer here…"
@@ -478,11 +468,11 @@ export default function AssessmentAttempt() {
                         flex: 1,
                         padding: '14px 18px',
                         border: `2px solid ${
-                          selected ? '#6f9a68' : '#e3e6e3'
+                          selected ? '#3f7a4f' : '#e3e6e3'
                         }`,
-                        borderRadius: 12,
-                        background: selected ? '#e8f4ec' : '#fff',
-                        color: '#0b0b0b',
+                        borderRadius: 14,
+                        background: selected ? '#e4f1e9' : 'white',
+                        color: '#202820',
                         fontSize: 15,
                         fontWeight: 600,
                         cursor: 'pointer'
@@ -507,7 +497,7 @@ export default function AssessmentAttempt() {
             <span
               style={{
                 fontSize: 12,
-                color: '#8a8f8c',
+                color: '#849087',
                 fontWeight: 600
               }}
             >
@@ -542,13 +532,13 @@ export default function AssessmentAttempt() {
         style={{
           position: 'sticky',
           bottom: 0,
-          background: '#fff',
+          background: 'white',
           padding: '16px 35px',
           borderTop: '1px solid #e3e6e3',
           display: 'flex',
           justifyContent: 'flex-end',
           gap: 12,
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.04)'
+          boxShadow: '0 -4px 20px rgba(40,70,50,0.06)'
         }}
       >
         {timeExpired || submitted ? null : (
@@ -584,8 +574,8 @@ function StatPill({ label, value, color }) {
         gap: 8,
         padding: '10px 16px',
         border: '1px solid #e3e6e3',
-        borderRadius: 12,
-        background: '#fff',
+        borderRadius: 14,
+        background: 'white',
         flex: 1,
         minWidth: 110
       }}
@@ -600,10 +590,10 @@ function StatPill({ label, value, color }) {
         }}
       />
       <div>
-        <div style={{ fontSize: 11, color: '#8a8f8c', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        <div style={{ fontSize: 11, color: '#849087', textTransform: 'uppercase', letterSpacing: 0.4 }}>
           {label}
         </div>
-        <div style={{ fontSize: 16, fontWeight: 800, color: '#0b0b0b' }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: '#202820' }}>
           {value}
         </div>
       </div>

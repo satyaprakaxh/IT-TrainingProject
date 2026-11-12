@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { assessmentService } from '../services/assessment.service';
 
+import { CheckCircle2, AlertCircle, Clock, Play, List } from 'lucide-react';
+
+import './Assessment.css';
+
 export default function AssessmentResult() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
@@ -29,7 +33,7 @@ export default function AssessmentResult() {
 
   if (loading) {
     return (
-      <div className="assess-page">
+      <div className="assess-container">
         <div className="assess-empty">
           <div className="assess-skeleton-text wide" />
           <div className="assess-skeleton-text" style={{ width: '55%' }} />
@@ -40,10 +44,7 @@ export default function AssessmentResult() {
 
   if (error || !attempt) {
     return (
-      <div className="assess-page">
-        <div className="assess-page-header">
-          <h1>Result</h1>
-        </div>
+      <div className="assess-container">
         <div className="assess-error">{error || 'Result not found.'}</div>
         <div style={{ textAlign: 'center', marginTop: 30 }}>
           <Link to="/assessment" className="assess-btn-ghost">
@@ -72,19 +73,19 @@ export default function AssessmentResult() {
     : '—';
 
   return (
-    <div className="assess-page">
-      <div className="assess-page-header">
+    <div className="assess-container">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <Link to="/assessment" className="assess-btn-ghost">
           ← Back to Assessments
         </Link>
         <div>
-          <h1>Assessment Result</h1>
-          <p>{attempt.assessment?.title || 'Assessment'}</p>
+          <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, color: '#202820' }}>{attempt.assessment?.title || 'Assessment Result'}</h1>
+          <p style={{ margin: '4px 0 0', color: '#607066' }}>{attempt.assessment?.title || 'Assessment'}</p>
         </div>
       </div>
 
       <div className="assess-card" style={{ maxWidth: 820, margin: '0 auto' }}>
-        <div style={{ padding: '30px 34px' }}>
+        <div style={{ padding: '22px' }}>
           {/* Result banner */}
           <div
             style={{
@@ -93,7 +94,7 @@ export default function AssessmentResult() {
               gap: 16,
               padding: '22px 26px',
               borderRadius: 16,
-              background: passed ? '#e8f5e9' : '#fdecec',
+              background: passed ? '#e4f1e9' : '#fdecec',
               border: `1px solid ${passed ? '#c9e6d6' : '#f5bcbc'}`,
               marginBottom: 26
             }}
@@ -103,7 +104,7 @@ export default function AssessmentResult() {
                 width: 44,
                 height: 44,
                 borderRadius: '50%',
-                background: passed ? '#6f9a68' : '#d64545',
+                background: passed ? '#3f7a4f' : '#d64545',
                 color: '#fff',
                 display: 'grid',
                 placeItems: 'center',
@@ -111,7 +112,7 @@ export default function AssessmentResult() {
                 flexShrink: 0
               }}
             >
-              {passed ? '✓' : '✗'}
+              {passed ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
             </span>
             <div>
               <h2
@@ -124,7 +125,7 @@ export default function AssessmentResult() {
               >
                 {passed ? 'You Passed!' : 'You Did Not Pass'}
               </h2>
-              <p style={{ margin: '4px 0 0', fontSize: 14, color: '#666' }}>
+              <p style={{ margin: '4px 0 0', fontSize: 14, color: '#607066' }}>
                 Keep practicing to improve your score.
               </p>
             </div>
@@ -150,34 +151,34 @@ export default function AssessmentResult() {
             <BreakdownCard
               label="Correct"
               value={correctCount}
-              color="#6f9a68"
-              bg="#e8f5e9"
+              color="#3f7a4f"
+              bg="#e4f1e9"
+              borderColor="#c9e6d6"
             />
             <BreakdownCard
               label="Incorrect"
               value={incorrectCount}
               color="#d64545"
               bg="#fdecec"
+              borderColor="#f5bcbc"
             />
             <BreakdownCard
               label="Unanswered"
               value={unansweredCount}
               color="#b58900"
               bg="#fff3e0"
+              borderColor="#ffe0b2"
             />
           </div>
 
           {/* Detailed review */}
-          <h3
-            style={{
-              margin: '0 0 14px',
-              fontSize: 17,
-              fontWeight: 700,
-              color: '#0b0b0b'
-            }}
-          >
-            Question Review
-          </h3>
+          <div className="assess-section-heading">
+            <div>
+              <h3>Question Review</h3>
+              <p>Review your answers below.</p>
+            </div>
+            <List size={22} />
+          </div>
           <div
             style={{
               display: 'flex',
@@ -211,12 +212,13 @@ export default function AssessmentResult() {
             </Link>
             <button
               className="assess-btn-primary"
-              onClick={() =>
-                navigate(`/assessment/instructions/${attempt.assessment?.id}`)
-              }
+              onClick={() => {
+                const retakeUrl = `/assessment/instructions/${attempt.assessment?.id}`;
+                navigate(retakeUrl);
+              }}
               disabled={!attempt.assessment?.id}
             >
-              Retake Assessment
+              <Play size={17} /> Retake Assessment
             </button>
           </div>
         </div>
@@ -232,34 +234,34 @@ function ResultPill({ label, value }) {
         flex: 1,
         padding: '16px 18px',
         border: '1px solid #e3e6e3',
-        borderRadius: 12,
-        background: '#fff'
+        borderRadius: 14,
+        background: 'white'
       }}
     >
-      <div style={{ fontSize: 11, color: '#8a8f8c', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>
+      <div style={{ fontSize: 11, color: '#849087', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>
         {label}
       </div>
-      <div style={{ fontSize: 20, fontWeight: 800, color: '#0b0b0b' }}>
+      <div style={{ fontSize: 20, fontWeight: 800, color: '#202820' }}>
         {value}
       </div>
     </div>
   );
 }
 
-function BreakdownCard({ label, value, color, bg }) {
+function BreakdownCard({ label, value, color, bg, borderColor }) {
   return (
     <div
       style={{
         padding: '16px 18px',
-        borderRadius: 12,
+        borderRadius: 14,
         background: bg,
-        border: `1px solid ${color === '#6f9a68' ? '#c9e6d6' : color === '#d64545' ? '#f5bcbc' : '#ffe0b2'}`
+        border: `1px solid ${borderColor}`
       }}
     >
       <div style={{ fontSize: 11, color: color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 6 }}>
         {label}
       </div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: '#0b0b0b' }}>
+      <div style={{ fontSize: 22, fontWeight: 800, color: '#202820' }}>
         {value}
       </div>
     </div>
@@ -280,8 +282,8 @@ function ReviewItem({ response, index }) {
       style={{
         padding: '14px 18px',
         border: '1px solid #e3e6e3',
-        borderRadius: 12,
-        background: '#fff',
+        borderRadius: 14,
+        background: 'white',
         display: 'flex',
         alignItems: 'flex-start',
         gap: 12
@@ -292,8 +294,8 @@ function ReviewItem({ response, index }) {
           width: 26,
           height: 26,
           borderRadius: '50%',
-          background: isCorrect ? '#e8f5e9' : '#fdecec',
-          color: isCorrect ? '#6f9a68' : '#d64545',
+          background: isCorrect ? '#e4f1e9' : '#fdecec',
+          color: isCorrect ? '#3f7a4f' : '#d64545',
           display: 'grid',
           placeItems: 'center',
           fontSize: 13,
@@ -304,10 +306,10 @@ function ReviewItem({ response, index }) {
         {isCorrect ? '✓' : '✗'}
       </span>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12, color: '#8a8f8c', marginBottom: 4 }}>
+        <div style={{ fontSize: 12, color: '#849087', marginBottom: 4 }}>
           Question {index} • {q.type}
         </div>
-        <div style={{ fontSize: 14, color: '#0b0b0b', fontWeight: 600, marginBottom: 6 }}>
+        <div style={{ fontSize: 14, color: '#202820', fontWeight: 600, marginBottom: 6 }}>
           {q.questionText}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#3a3a3a' }}>
@@ -315,15 +317,15 @@ function ReviewItem({ response, index }) {
           <span
             style={{
               fontWeight: 600,
-              color: isCorrect ? '#6f9a68' : '#d64545'
+              color: isCorrect ? '#3f7a4f' : '#d64545'
             }}
           >
             {selectedText}
           </span>
           {isCorrect === false && response.pointsAwarded == null ? (
-            <span style={{ color: '#8a8f8c', fontSize: 11 }}>0 pts</span>
+            <span style={{ color: '#849087', fontSize: 11 }}>0 pts</span>
           ) : (
-            <span style={{ color: '#6f9a68', fontSize: 11, fontWeight: 700 }}>
+            <span style={{ color: '#3f7a4f', fontSize: 11, fontWeight: 700 }}>
               {response.pointsAwarded} pts
             </span>
           )}

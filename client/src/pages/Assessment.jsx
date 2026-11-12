@@ -2,6 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { assessmentService } from '../services/assessment.service';
 
+import {
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+  List,
+  Play,
+  BookOpen,
+  Target,
+} from 'lucide-react';
+
+import './Assessment.css';
+
 export default function Assessment() {
   const navigate = useNavigate();
 
@@ -112,19 +124,10 @@ export default function Assessment() {
 
   if (loading) {
     return (
-      <div className="assess-page">
-        <div className="assess-page-header">
-          <h1>Assessments</h1>
-          <p>Evaluate your skills and track your progress.</p>
-        </div>
-        <div className="assess-cards-grid">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="assess-card assess-skeleton">
-              <div className="assess-skeleton-text wide" />
-              <div className="assess-skeleton-text narrow" />
-              <div className="assess-skeleton-text" style={{ width: '55%' }} />
-            </div>
-          ))}
+      <div className="assess-container">
+        <div className="assess-empty">
+          <div className="assess-skeleton-text wide" />
+          <div className="assess-skeleton-text" style={{ width: '55%' }} />
         </div>
       </div>
     );
@@ -132,63 +135,75 @@ export default function Assessment() {
 
   if (error) {
     return (
-      <div className="assess-page">
-        <div className="assess-page-header">
-          <h1>Assessments</h1>
-          <p>Evaluate your skills and track your progress.</p>
-        </div>
+      <div className="assess-container">
         <div className="assess-error">{error}</div>
+        <div style={{ textAlign: 'center', marginTop: 30 }}>
+          <Link to="/dashboard" className="assess-btn-ghost">
+            Back to Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="assess-page">
-      <div className="assess-page-header">
+    <div className="assess-container">
+      {/* Welcome Banner */}
+      <section className="assess-welcome">
         <div>
-          <h1>Assessments</h1>
-          <p>Test your knowledge and track your learning progress.</p>
+          <p className="assess-eyebrow">YOUR ASSESSMENTS</p>
+          <h1>Evaluate Your Skills</h1>
+          <p>
+            Test your knowledge and track your learning progress.
+          </p>
         </div>
-        <Link
-          to="/assessment/history"
-          className="assess-btn-ghost"
-          style={{ marginLeft: 'auto' }}
-        >
-          View History
-        </Link>
-      </div>
+        <div className="assess-welcome-icon">
+          <Target size={35} />
+        </div>
+      </section>
 
       {/* Stats */}
-      <div className="assess-stats-grid">
+      <section className="assess-stats-grid">
         <div className="assess-stat-card">
-          <div className="assess-stat-icon">📝</div>
-          <div className="assess-stat-body">
-            <h3>{stats.total}</h3>
-            <p>Total Assessments</p>
+          <div className="assess-stat-icon">
+            <List size={23} />
+          </div>
+          <div>
+            <p className="assess-muted">Total Assessments</p>
+            <h2>{stats.total}</h2>
           </div>
         </div>
+
         <div className="assess-stat-card">
-          <div className="assess-stat-icon">✅</div>
-          <div className="assess-stat-body">
-            <h3>{stats.completed}</h3>
-            <p>Completed</p>
+          <div className="assess-stat-icon">
+            <CheckCircle2 size={23} />
+          </div>
+          <div>
+            <p className="assess-muted">Completed</p>
+            <h2>{stats.completed}</h2>
           </div>
         </div>
+
         <div className="assess-stat-card">
-          <div className="assess-stat-icon">⏳</div>
-          <div className="assess-stat-body">
-            <h3>{stats.pending}</h3>
-            <p>Pending</p>
+          <div className="assess-stat-icon">
+            <TrendingUp size={23} />
+          </div>
+          <div>
+            <p className="assess-muted">Average Score</p>
+            <h2>{stats.averageScore}%</h2>
           </div>
         </div>
+
         <div className="assess-stat-card">
-          <div className="assess-stat-icon">📊</div>
-          <div className="assess-stat-body">
-            <h3>{stats.averageScore}%</h3>
-            <p>Average Score</p>
+          <div className="assess-stat-icon">
+            <Clock size={23} />
+          </div>
+          <div>
+            <p className="assess-muted">Pending</p>
+            <h2>{stats.pending}</h2>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Toolbar */}
       <div className="assess-toolbar">
@@ -209,9 +224,9 @@ export default function Assessment() {
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
-          <option value="all">All Status</option>
+          <option value="all">All</option>
+          <option value="pending">Available</option>
           <option value="completed">Completed</option>
-          <option value="pending">Not Started</option>
         </select>
         <select
           className="assess-select"
@@ -224,7 +239,12 @@ export default function Assessment() {
         </select>
       </div>
 
-      <h2 className="assess-section-title">Available Assessments</h2>
+      <div className="assess-section-heading">
+        <div>
+          <h3>Available Assessments</h3>
+          <p>Select an assessment to begin.</p>
+        </div>
+      </div>
 
       {filtered.length === 0 ? (
         <div className="assess-empty">
@@ -286,16 +306,16 @@ function AssessmentCard({ assessment, onStart }) {
         </p>
         <div className="assess-card-details">
           <span className="assess-card-detail">
-            📚 {courseTitle}
+            <BookOpen size={14} /> {courseTitle}
           </span>
           <span className="assess-card-detail">
-            ⚡ {difficultyLabel}
+            <Target size={14} /> {difficultyLabel}
           </span>
           <span className="assess-card-detail">
-            ❓ {assessment.questionCount} questions
+            <Clock size={14} /> {assessment.questionCount} questions
           </span>
           <span className="assess-card-detail">
-            ⏱️ {durationText}
+            {durationText}
           </span>
           {assessment.passingScore != null && (
             <span className="assess-card-detail">

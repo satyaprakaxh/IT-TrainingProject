@@ -17,9 +17,6 @@ import AssessmentHistory from './pages/AssessmentHistory';
 import Courses from './pages/Courses';
 import Progress from './pages/Progress';
 
-// Import shared assessment styles
-import './components/assessment/assessment.css';
-
 // Check if the user is authenticated
 const isAuthenticated = () => !!localStorage.getItem('token');
 
