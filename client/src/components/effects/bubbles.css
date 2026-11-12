@@ -1,0 +1,57 @@
+
+.bubbles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -80px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.85),
+    rgba(111, 154, 104, 0.35) 55%,
+    rgba(111, 154, 104, 0.15)
+  );
+  border: 1px solid rgba(79, 138, 91, 0.25);
+  opacity: 0;
+  animation-name: bubble-rise;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.8);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: var(--op);
+  }
+
+  50% {
+    transform: translate3d(calc(var(--drift) * -0.6), -55vh, 0) scale(1);
+  }
+
+  90% {
+    opacity: var(--op);
+  }
+
+  100% {
+    transform: translate3d(var(--drift), -120vh, 0) scale(1.15);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble {
+    animation: none;
+    display: none;
+  }
+}
