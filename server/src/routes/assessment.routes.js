@@ -25,6 +25,9 @@ router.post(
   createAssessment
 );
 
+// Registered before /:id so "attempts" is not captured as an assessment id.
+router.get('/attempts/:attemptId', authenticate, getAttempt);
+
 router.get('/:id', authenticate, getAssessment);
 router.get('/:id/questions', authenticate, getQuestions);
 
@@ -45,6 +48,5 @@ router.post('/:id/submit', authenticate, submitAssessment);
 
 // ─── Attempt history (student) ───────────────────────────────────────────
 router.get('/:id/attempts', authenticate, getAttempts);
-router.get('/attempts/:attemptId', authenticate, getAttempt);
 
 module.exports = router;
