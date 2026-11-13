@@ -22,6 +22,7 @@ import AssessmentHistory from './pages/AssessmentHistory';
 import Courses from './pages/Courses';
 import LearningPath from './pages/LearningPath';
 import Progress from './pages/Progress';
+import Profile from './pages/Profile';
 
 import FloatingBubbles from './components/effects/FloatingBubbles';
 
@@ -189,6 +190,17 @@ export default function App() {
             <PrivateRoute>
               <AppShell>
                 <Courses />
+              </AppShell>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <AppShell>
+                <Profile />
               </AppShell>
             </PrivateRoute>
           }
