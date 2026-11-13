@@ -326,3 +326,104 @@
     top: 43px;
   }
 }
+
+.dashboard-ai-reply {
+  margin-top: 15px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(128, 100, 154, 0.09);
+  border: 1px solid rgba(128, 100, 154, 0.2);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-ai-reply strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #80649a;
+  margin-bottom: 8px;
+}
+
+.dashboard-ai-reply p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.dashboard-mentor-input button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Personalized Learning Path */
+.dashboard-path-insight {
+  background: #f4f0e8;
+  border: 1px solid #e5dccb;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 18px 0;
+}
+
+.dashboard-path-insight h4 {
+  margin: 10px 0 5px;
+  font-size: 18px;
+}
+
+.dashboard-path-insight p {
+  margin: 0;
+  color: #68736a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dashboard-path-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 10px 0;
+  color: #74613f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dashboard-path-reason svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Personalized Learning Path */
+
+.dashboard-path-insight {
+  background: #f4f0e8;
+  border: 1px solid #e5dccb;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 18px 0;
+}
+
+.dashboard-path-insight h4 {
+  margin: 10px 0 5px;
+  font-size: 18px;
+}
+
+.dashboard-path-insight p {
+  margin: 0;
+  color: #68736a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dashboard-path-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 10px 0;
+  color: #74613f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dashboard-path-reason svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}

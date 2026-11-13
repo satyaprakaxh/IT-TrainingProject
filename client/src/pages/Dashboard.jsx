@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { dashboardService } from "../services/dashboard.service";
+import { coursesService } from "../services/courses.service";
 
 import {
   BookOpen,
@@ -10,9 +12,9 @@ import {
   Sparkles,
   Play,
   Target,
-  Lock,
   CheckCircle2,
   Send,
+  Lightbulb,
 } from "lucide-react";
 
 import {
@@ -34,22 +36,20 @@ const INITIAL_STATS = {
   total: 0,
 };
 
-const skills = [
-  { skill: "JavaScript", score: 78 },
-  { skill: "React", score: 62 },
-  { skill: "Node.js", score: 55 },
-  { skill: "SQL", score: 40 },
-  { skill: "Git", score: 85 },
-  { skill: "APIs", score: 58 },
-];
+const STATUS_ORDER = {
+  done: 1,
+  current: 2,
+  recommended: 3,
+};
 
-const learningPath = [
-  { title: "JS Fundamentals", status: "done" },
-  { title: "Async & Promises", status: "done" },
-  { title: "Node fs Module", status: "current" },
-  { title: "Express APIs", status: "locked" },
-  { title: "Prisma & SQL", status: "locked" },
-];
+const DIFFICULTY_ORDER = {
+  BEGINNER: 1,
+  EASY: 1,
+  INTERMEDIATE: 2,
+  MEDIUM: 2,
+  ADVANCED: 3,
+  HARD: 3,
+};
 
 function StatCard({ icon: Icon, label, value, sub }) {
   return (
@@ -68,16 +68,24 @@ function StatCard({ icon: Icon, label, value, sub }) {
 }
 
 export default function Dashboard() {
-  // Dashboard statistics state
+  const navigate = useNavigate();
+
   const [stats, setStats] = useState(INITIAL_STATS);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
 
-  // Other dashboard states
+  const [skills, setSkills] = useState([]);
+  const [skillsLoading, setSkillsLoading] = useState(true);
+  const [skillsError, setSkillsError] = useState("");
+
+  const [learningPath, setLearningPath] = useState([]);
+  const [pathLoading, setPathLoading] = useState(true);
+  const [pathError, setPathError] = useState("");
+
   const [question, setQuestion] = useState("");
   const [message, setMessage] = useState("");
 
-  // Fetch latest statistics from backend
+  // Fetch dashboard statistics
   const fetchStats = useCallback(async () => {
     try {
       setStatsError("");
@@ -98,26 +106,252 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Fetch statistics when dashboard opens
+  // Fetch skill map
+  const fetchSkills = useCallback(async () => {
+    try {
+      setSkillsError("");
+
+      const data = await dashboardService.getSkillMap();
+
+      if (data.success) {
+        const formattedSkills = (data.skills || []).map((item) => ({
+          id: item.id,
+          skill: item.name,
+          score: Number(item.score) || 0,
+          level: item.level,
+          category: item.category,
+        }));
+
+        setSkills(formattedSkills);
+      }
+    } catch (error) {
+      console.error("Failed to fetch skill map:", error);
+
+      setSkillsError(
+        error.response?.data?.message ||
+          "Unable to load your skill map."
+      );
+    } finally {
+      setSkillsLoading(false);
+    }
+  }, []);
+
+  // Find strongest and weakest skills
+  const strongest =
+    skills.length > 0
+      ? [...skills].sort((a, b) => b.score - a.score)[0]
+      : null;
+
+  const weakest =
+    skills.length > 0
+      ? [...skills].sort((a, b) => a.score - b.score)[0]
+      : null;
+
+  // Build personalized learning path
+  const fetchLearningPath = useCallback(async () => {
+    try {
+      setPathLoading(true);
+      setPathError("");
+
+      if (skillsLoading) return;
+
+      const data = await coursesService.getCourses();
+      const allCourses = data.courses || [];
+
+      if (allCourses.length === 0) {
+        setLearningPath([]);
+        return;
+      }
+
+      // Find all skills with the lowest score
+      const lowestScore =
+        skills.length > 0
+          ? Math.min(...skills.map((skill) => skill.score))
+          : null;
+
+      const weakestSkills =
+        lowestScore !== null
+          ? skills.filter((skill) => skill.score === lowestScore)
+          : [];
+
+      const weakestSkillNames = weakestSkills.map((skill) =>
+        skill.skill.toLowerCase().trim()
+      );
+
+      // Match courses with weak skills
+      const coursesWithMatches = allCourses.map((course) => {
+        const courseSkills = course.skills || [];
+
+        const matchedSkills = courseSkills.filter((courseSkill) => {
+          const courseSkillName = courseSkill.name
+            .toLowerCase()
+            .trim();
+
+          return weakestSkillNames.some(
+            (weakSkill) =>
+              courseSkillName === weakSkill ||
+              courseSkillName.includes(weakSkill) ||
+              weakSkill.includes(courseSkillName)
+          );
+        });
+
+        return {
+          ...course,
+          skills: courseSkills,
+          matchedSkills,
+          relevanceScore: matchedSkills.length,
+        };
+      });
+
+      // Prefer courses matching weak skills.
+      // If no courses match, show all available courses.
+      const matchingCourses = coursesWithMatches.filter(
+        (course) => course.relevanceScore > 0
+      );
+
+      const recommendedCourses =
+        matchingCourses.length > 0
+          ? matchingCourses
+          : coursesWithMatches;
+
+      // Fetch real progress for enrolled courses
+      const coursesWithProgress = await Promise.all(
+        recommendedCourses.map(async (course) => {
+          let completionPercentage = 0;
+          let completedLessons = 0;
+          let lessonCount = course.lessonCount || 0;
+
+          if (course.isEnrolled) {
+            try {
+              const progressData =
+                await coursesService.getCourseProgress(course.id);
+
+              const progress =
+                progressData.progress || progressData;
+
+              completionPercentage =
+                Number(progress.completionPercentage) || 0;
+
+              completedLessons =
+                Number(progress.completedLessons) || 0;
+
+              lessonCount =
+                Number(progress.lessonCount) || lessonCount;
+            } catch (error) {
+              console.error(
+                `Failed to fetch progress for ${course.title}:`,
+                error
+              );
+            }
+          }
+
+          let status = "recommended";
+
+          if (
+            completionPercentage >= 100 ||
+            course.enrollmentStatus === "COMPLETED"
+          ) {
+            status = "done";
+            completionPercentage = 100;
+          } else if (course.isEnrolled) {
+            status = "current";
+          }
+
+          return {
+            id: course.id,
+            title: course.title,
+            description: course.description || "",
+            category: course.category || "",
+            difficulty: course.difficulty || "BEGINNER",
+            skills: course.skills,
+            matchedSkills: course.matchedSkills,
+            relevanceScore: course.relevanceScore,
+            isEnrolled: course.isEnrolled,
+            completionPercentage,
+            completedLessons,
+            lessonCount,
+            status,
+          };
+        })
+      );
+
+      // Sort by enrollment status, skill relevance and difficulty
+      coursesWithProgress.sort((a, b) => {
+        const statusDifference =
+          STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+
+        if (statusDifference !== 0) {
+          return statusDifference;
+        }
+
+        const relevanceDifference =
+          b.relevanceScore - a.relevanceScore;
+
+        if (relevanceDifference !== 0) {
+          return relevanceDifference;
+        }
+
+        const difficultyA =
+          DIFFICULTY_ORDER[a.difficulty.toUpperCase()] || 2;
+
+        const difficultyB =
+          DIFFICULTY_ORDER[b.difficulty.toUpperCase()] || 2;
+
+        return difficultyA - difficultyB;
+      });
+
+      setLearningPath(coursesWithProgress.slice(0, 5));
+    } catch (error) {
+      console.error("Failed to create learning path:", error);
+
+      setPathError(
+        error.response?.data?.message ||
+          "Unable to load your personalized learning path."
+      );
+    } finally {
+      setPathLoading(false);
+    }
+  }, [skills, skillsLoading]);
+
+  // Load dashboard data
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+    fetchSkills();
+  }, [fetchStats, fetchSkills]);
 
-  // Find weakest skill
-  const weakest = [...skills].sort(
-    (a, b) => a.score - b.score
-  )[0];
+  // Build learning path after skills load
+  useEffect(() => {
+    if (!skillsLoading) {
+      fetchLearningPath();
+    }
+  }, [skillsLoading, fetchLearningPath]);
 
-  // Calculate XP progress
-  const xpPct = Math.min(
-    100,
-    Math.round((stats.xp / stats.nextLevelXp) * 100)
-  );
+  // XP progress
+  const xpPct =
+    stats.nextLevelXp > 0
+      ? Math.min(
+          100,
+          Math.round((stats.xp / stats.nextLevelXp) * 100)
+        )
+      : 0;
 
+  // Practice weakest skill
   function handlePractice() {
-    setMessage(`Your ${weakest.skill} practice session is ready!`);
+    if (!weakest) {
+      setMessage(
+        "Complete an assessment to discover your weakest skill."
+      );
+      return;
+    }
+
+    navigate("/assessment", {
+      state: {
+        practiceSkill: weakest.skill,
+      },
+    });
   }
 
+  // AI mentor message
   function handleSend() {
     if (!question.trim()) return;
 
@@ -128,10 +362,38 @@ export default function Dashboard() {
     setQuestion("");
   }
 
+  // Course-specific explanation
+  function getCourseReason(course) {
+    if (course.matchedSkills.length > 0) {
+      const matchedNames = course.matchedSkills
+        .map((skill) => skill.name)
+        .join(", ");
+
+      if (
+        course.difficulty.toUpperCase() === "BEGINNER" ||
+        course.difficulty.toUpperCase() === "EASY"
+      ) {
+        return `Build your foundation in ${matchedNames} with this beginner-friendly course.`;
+      }
+
+      if (
+        course.difficulty.toUpperCase() === "INTERMEDIATE" ||
+        course.difficulty.toUpperCase() === "MEDIUM"
+      ) {
+        return `Strengthen your ${matchedNames} knowledge with more practical concepts.`;
+      }
+
+      return `Develop advanced knowledge in ${matchedNames}.`;
+    }
+
+    return course.description ||
+      "Explore this course to develop your technical knowledge.";
+  }
+
   return (
     <div className="dashboard-container">
 
-      {/* Single Welcome Banner */}
+      {/* Welcome Banner */}
       <section className="dashboard-welcome">
         <div>
           <p className="dashboard-eyebrow">
@@ -150,7 +412,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Statistics Loading / Error */}
+      {/* Statistics */}
       {statsLoading && (
         <p className="dashboard-muted">
           Loading your learning statistics...
@@ -160,11 +422,10 @@ export default function Dashboard() {
       {statsError && (
         <p className="dashboard-muted" role="alert">
           {statsError}
-          <button onClick={fetchStats}> Try again</button>
+          <button onClick={fetchStats}>Try again</button>
         </p>
       )}
 
-      {/* Stats */}
       <section className="dashboard-stats-grid">
         <StatCard
           icon={Flame}
@@ -217,6 +478,7 @@ export default function Dashboard() {
       {/* Skills and AI Insight */}
       <div className="dashboard-main-grid">
 
+        {/* Skill Map */}
         <section className="dashboard-card dashboard-skill-card">
           <div className="dashboard-section-heading">
             <div>
@@ -227,46 +489,96 @@ export default function Dashboard() {
             <Target size={22} />
           </div>
 
-          <div className="dashboard-chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={skills} outerRadius="72%">
-                <PolarGrid stroke="#d5ddd8" />
+          {skillsLoading && (
+            <p className="dashboard-muted">
+              Loading your skill data...
+            </p>
+          )}
 
-                <PolarAngleAxis
-                  dataKey="skill"
-                  tick={{ fill: "#4b5a50", fontSize: 12 }}
-                />
+          {skillsError && (
+            <div>
+              <p className="dashboard-muted" role="alert">
+                {skillsError}
+              </p>
 
-                <Radar
-                  dataKey="score"
-                  stroke="#3f7a4f"
-                  fill="#6f9a68"
-                  fillOpacity={0.45}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
+              <button onClick={fetchSkills}>
+                Try again
+              </button>
+            </div>
+          )}
 
-          <button
-            className="dashboard-primary-button"
-            onClick={handlePractice}
-          >
-            <Target size={17} />
-            Practice {weakest.skill}
-          </button>
+          {!skillsLoading &&
+            !skillsError &&
+            skills.length === 0 && (
+              <div className="dashboard-chart">
+                <p className="dashboard-muted">
+                  No skill data available yet. Complete an assessment
+                  to see your skill map.
+                </p>
+              </div>
+            )}
+
+          {!skillsLoading &&
+            !skillsError &&
+            skills.length > 0 && (
+              <>
+                <div className="dashboard-chart">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={skills} outerRadius="72%">
+                      <PolarGrid stroke="#d5ddd8" />
+
+                      <PolarAngleAxis
+                        dataKey="skill"
+                        tick={{
+                          fill: "#4b5a50",
+                          fontSize: 12,
+                        }}
+                      />
+
+                      <Radar
+                        dataKey="score"
+                        stroke="#3f7a4f"
+                        fill="#6f9a68"
+                        fillOpacity={0.45}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <button
+                  className="dashboard-primary-button"
+                  onClick={handlePractice}
+                >
+                  <Target size={17} />
+                  Practice {weakest?.skill || "Weakest Skill"}
+                </button>
+              </>
+            )}
         </section>
 
+        {/* AI Insight */}
         <section className="dashboard-insight-card">
           <div className="dashboard-insight-heading">
             <Sparkles size={20} />
             <h3>Weekly AI insight</h3>
           </div>
 
-          <p>
-            Git and JavaScript are your strongest skills.
-            {` ${weakest.skill} is currently your weakest skill at ${weakest.score}%.`}
-            {" "}Spend 15 minutes practising it to improve your performance.
-          </p>
+          {skills.length > 0 ? (
+            <p>
+              {strongest.skill} is your strongest skill at{" "}
+              {strongest.score}%.
+              {" "}
+              {weakest.skill} is currently your weakest skill at{" "}
+              {weakest.score}%.
+              {" "}
+              Spend 15 minutes practising it to improve your performance.
+            </p>
+          ) : (
+            <p>
+              Complete your assessments to discover your strongest
+              and weakest skills and receive personalized insights.
+            </p>
+          )}
 
           <div className="dashboard-mentor">
             <h4>Ask your AI mentor</h4>
@@ -292,34 +604,156 @@ export default function Dashboard() {
         </section>
       </div>
 
-      {/* Learning Path */}
+      {/* Personalized Learning Path */}
       <section className="dashboard-card">
         <div className="dashboard-section-heading">
           <div>
             <h3>Your learning path</h3>
-            <p>Follow your personalized learning journey</p>
+            <p>
+              A personalized journey based on your assessment results
+            </p>
           </div>
 
           <BookOpen size={22} />
         </div>
 
-        <div className="dashboard-learning-path">
-          {learningPath.map((step, index) => (
-            <div className="dashboard-path-item" key={step.title}>
-              <div className={`dashboard-path-icon ${step.status}`}>
-                {step.status === "done" && <CheckCircle2 size={21} />}
-                {step.status === "current" && <Play size={19} />}
-                {step.status === "locked" && <Lock size={18} />}
-              </div>
-
-              <p>{step.title}</p>
-
-              {index !== learningPath.length - 1 && (
-                <div className="dashboard-path-line" />
-              )}
+        {/* Weakest Skill */}
+        {weakest && (
+          <div className="dashboard-path-insight">
+            <div className="dashboard-insight-heading">
+              <Target size={19} />
+              <strong>Your focus area</strong>
             </div>
-          ))}
-        </div>
+
+            <h4>{weakest.skill}</h4>
+
+            <p>
+              Your current score is{" "}
+              <strong>{weakest.score}%</strong>.
+              These courses are selected to help strengthen your skills.
+            </p>
+          </div>
+        )}
+
+        {skills.length === 0 && !skillsLoading && (
+          <p className="dashboard-muted">
+            Complete an assessment to receive skill-based course
+            recommendations.
+          </p>
+        )}
+
+        {pathLoading && (
+          <p className="dashboard-muted">
+            Creating your personalized learning path...
+          </p>
+        )}
+
+        {pathError && (
+          <div>
+            <p className="dashboard-muted" role="alert">
+              {pathError}
+            </p>
+
+            <button onClick={fetchLearningPath}>
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!pathLoading &&
+          !pathError &&
+          learningPath.length === 0 && (
+            <p className="dashboard-muted">
+              No published courses are available yet.
+            </p>
+          )}
+
+        {!pathLoading &&
+          !pathError &&
+          learningPath.length > 0 && (
+            <div className="dashboard-learning-path">
+              {learningPath.map((step, index) => (
+                <div
+                  className="dashboard-path-item"
+                  key={step.id}
+                >
+                  <div
+                    className={`dashboard-path-icon ${step.status}`}
+                  >
+                    {step.status === "done" && (
+                      <CheckCircle2 size={21} />
+                    )}
+
+                    {step.status === "current" && (
+                      <Play size={19} />
+                    )}
+
+                    {step.status === "recommended" && (
+                      <BookOpen size={19} />
+                    )}
+                  </div>
+
+                  <div className="dashboard-path-content">
+                    <p>{step.title}</p>
+
+                    <small>
+                      {step.status === "done" && "Completed"}
+
+                      {step.status === "current" &&
+                        `In progress · ${step.completionPercentage}%`}
+
+                      {step.status === "recommended" &&
+                        "Recommended for you"}
+                    </small>
+
+                    {/* Actual progress */}
+                    {step.isEnrolled && (
+                      <>
+                        <div className="dashboard-progress-track">
+                          <div
+                            className="dashboard-progress-fill"
+                            style={{
+                              width: `${step.completionPercentage}%`,
+                            }}
+                          />
+                        </div>
+
+                        <small>
+                          {step.completedLessons} of{" "}
+                          {step.lessonCount} lessons completed
+                        </small>
+                      </>
+                    )}
+
+                    {/* Individual recommendation explanation */}
+                    <div className="dashboard-path-reason">
+                      <Lightbulb size={15} />
+
+                      <span>{getCourseReason(step)}</span>
+                    </div>
+
+                    {/* Course details */}
+                    <small>
+                      {step.category} · {step.difficulty}
+                    </small>
+
+                    {step.skills.length > 0 && (
+                      <small>
+                        Course skills:{" "}
+                        {step.skills
+                          .map((skill) => skill.name)
+                          .join(", ")}
+                      </small>
+                    )}
+                  </div>
+
+                  {index !== learningPath.length - 1 && (
+                    <div className="dashboard-path-line" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
       </section>
 
       {/* Dashboard Message */}
@@ -332,7 +766,6 @@ export default function Dashboard() {
           </button>
         </div>
       )}
-
     </div>
   );
 }

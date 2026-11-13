@@ -130,6 +130,69 @@ router.get('/stats', authenticate, async (req, res) => {
 
 
 // ==========================================
+// GET /api/dashboard/skill-map
+// Fetch logged-in user's skill map
+// ==========================================
+
+router.get('/skill-map', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userSkills = await prisma.userSkill.findMany({
+      where: { userId },
+      include: {
+        skill: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            description: true
+          }
+        }
+      },
+      orderBy: {
+        score: 'desc'
+      }
+    });
+
+    const skills = userSkills.map((userSkill) => ({
+      id: userSkill.skill.id,
+      name: userSkill.skill.name,
+      category: userSkill.skill.category,
+      description: userSkill.skill.description,
+      score: Math.max(0, Math.min(100, userSkill.score)),
+      level: userSkill.level,
+      assessedAt: userSkill.assessedAt
+    }));
+
+    const strongestSkill = skills.length > 0
+      ? skills[0]
+      : null;
+
+    const weakestSkill = skills.length > 0
+      ? skills[skills.length - 1]
+      : null;
+
+    return res.json({
+      success: true,
+      skills,
+      strongestSkill,
+      weakestSkill,
+      totalSkills: skills.length
+    });
+
+  } catch (error) {
+    console.error('Skill map error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to fetch skill map'
+    });
+  }
+});
+
+
+// ==========================================
 // POST /api/dashboard/lessons/:lessonId/complete
 // Complete lesson and award XP
 // ==========================================

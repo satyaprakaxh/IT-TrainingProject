@@ -20,6 +20,7 @@ import AssessmentAttempt from './pages/AssessmentAttempt';
 import AssessmentResult from './pages/AssessmentResult';
 import AssessmentHistory from './pages/AssessmentHistory';
 import Courses from './pages/Courses';
+import LearningPath from './pages/LearningPath';
 import Progress from './pages/Progress';
 
 import FloatingBubbles from './components/effects/FloatingBubbles';
@@ -43,7 +44,6 @@ function PublicOnlyRoute({ children }) {
 
 // Common layout for protected pages
 function AppShell({ children }) {
-  // Load saved bubble preference
   const [bubblesEnabled, setBubblesEnabled] = useState(
     () => localStorage.getItem('bubbles-enabled') !== 'false'
   );
@@ -52,12 +52,12 @@ function AppShell({ children }) {
     () => localStorage.getItem('dashboard-theme') || 'light'
   );
 
-  // Save bubble setting whenever it changes
+  // Save bubble setting
   useEffect(() => {
     localStorage.setItem('bubbles-enabled', String(bubblesEnabled));
   }, [bubblesEnabled]);
 
-  // Apply and save selected theme
+  // Apply and save theme
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('dashboard-theme', theme);
@@ -189,6 +189,18 @@ export default function App() {
             <PrivateRoute>
               <AppShell>
                 <Courses />
+              </AppShell>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Learning Path route */}
+        <Route
+          path="/learning-path"
+          element={
+            <PrivateRoute>
+              <AppShell>
+                <LearningPath />
               </AppShell>
             </PrivateRoute>
           }
