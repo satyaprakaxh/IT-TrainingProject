@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth.routes');
 const courseRoutes = require('./routes/course.routes');
 const assessmentRoutes = require('./routes/assessment.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const aiRoutes = require('./routes/ai.routes');
 
 const app = express();
 
@@ -17,8 +18,22 @@ const app = express();
 // CORE MIDDLEWARE
 // ==========================================
 
+const configuredClient = process.env.CLIENT_URL || 'http://localhost:5173';
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin(origin, callback) {
+    // curl and same-server tools send no Origin header
+    if (!origin || origin === configuredClient) {
+      return callback(null, true);
+    }
+
+    // Vite may move to 5174 when 5173 is already in use
+    if (/^http:\/\/localhost:\d+$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
   credentials: true
 }));
 
@@ -33,6 +48,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/ai', aiRoutes);
 
 // ==========================================
 // BACKEND HEALTH CHECK
