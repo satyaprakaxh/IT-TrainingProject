@@ -11,6 +11,9 @@ const courseRoutes = require('./routes/course.routes');
 const assessmentRoutes = require('./routes/assessment.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const aiRoutes = require('./routes/ai.routes');
+const skillGapRoutes = require('./routes/skillGap.routes');
+const courseGeneratorRoutes = require('./routes/courseGenerator.routes');
+const learningPathRoutes = require('./routes/learningPath.routes');
 
 const app = express();
 
@@ -49,6 +52,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/skill-gap', skillGapRoutes);
+app.use('/api/course-generator', courseGeneratorRoutes);
+app.use('/api/learning-path', learningPathRoutes);
 
 // ==========================================
 // BACKEND HEALTH CHECK

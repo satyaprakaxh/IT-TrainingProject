@@ -1,0 +1,548 @@
+/* ============================================================
+   Learning Path Page Styles
+   Matches the existing AI Training System design language:
+   - Poppins typography
+   - Mint / soft pastel-green accents
+   - Black primary buttons
+   - White cards, subtle shadows, rounded corners
+   ============================================================ */
+
+.lp-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Poppins', Arial, sans-serif;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.lp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.lp-header div h1 {
+  margin: 0 0 4px;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+
+.lp-header div p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.lp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.lp-back:hover {
+  color: var(--green-dark);
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+.lp-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.lp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lp-btn-primary:hover {
+  background: #2a2a2a;
+}
+
+.lp-btn-primary:disabled {
+  background: #a0aaa2;
+  cursor: not-allowed;
+}
+
+.lp-btn-ghost {
+  padding: 10px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lp-btn-ghost:hover {
+  background: #e4f1e9;
+  color: var(--green-dark);
+}
+
+.lp-btn-delete {
+  color: #d64545;
+  border-color: #f5bcbc;
+}
+
+.lp-btn-delete:hover {
+  background: #fdecec;
+  color: #b03a3a;
+}
+
+.lp-btn-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.lp-btn-view:hover {
+  background: #e4f1e9;
+  color: var(--green-dark);
+}
+
+/* ── Empty State ─────────────────────────────────────────── */
+.lp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  color: var(--muted);
+}
+
+.lp-empty-icon {
+  width: 64px;
+  height: 64px;
+  color: #9aa39f;
+  margin-bottom: 16px;
+}
+
+.lp-empty h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lp-empty p {
+  margin: 0 0 22px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.lp-skeleton {
+  background: linear-gradient(90deg, #eef2f0 25%, #f7f9f8 50%, #eef2f0 75%);
+  background-size: 200% 100%;
+  animation: lp-shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+
+.lp-skeleton.wide {
+  height: 16px;
+  width: 70%;
+}
+
+.lp-skeleton:not(.wide) {
+  height: 16px;
+  width: 60%;
+}
+
+@keyframes lp-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Error ───────────────────────────────────────────────── */
+.lp-error {
+  background: #fdecec;
+  border: 1px solid #f5bcbc;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: #d64545;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* ── Stats Grid ──────────────────────────────────────────── */
+.lp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.lp-stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lp-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--mint-soft);
+  color: var(--green-dark);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.lp-stat-card h3 {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.lp-stat-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── Section ─────────────────────────────────────────────── */
+.lp-section {
+  margin-bottom: 30px;
+}
+
+.lp-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.lp-section-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lp-section-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── Roadmap ─────────────────────────────────────────────── */
+.lp-roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.lp-connector {
+  position: absolute;
+  left: 30px;
+  top: 70px;
+  bottom: 70px;
+  width: 2px;
+  background: #e3e6e3;
+  z-index: 0;
+}
+
+.lp-line {
+  height: 100%;
+  background: #6f9a68;
+}
+
+.lp-step-content {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-left: 30px;
+  min-width: 0;
+}
+
+.lp-step.completed .lp-step-content {
+  background: #e4f1e9;
+  border-color: #c9e6d6;
+}
+
+.lp-step-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
+.lp-step.completed .lp-step-badge {
+  background: #3f7a4f;
+}
+
+.lp-step-details h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lp-difficulty {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.lp-difficulty.beginner {
+  background: #e4f1e9;
+  color: #3f7a4f;
+}
+
+.lp-difficulty.intermediate {
+  background: #fff3e0;
+  color: #b58900;
+}
+
+.lp-difficulty.advanced,
+.lp-difficulty.expert {
+  background: #fdecec;
+  color: #d64545;
+}
+
+.lp-step-desc {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.lp-skill-focus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 8px 14px;
+  background: #fff3e0;
+  border-radius: 12px;
+  border: 1px solid #ffe0b2;
+}
+
+.lp-focus-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #b58900;
+}
+
+.lp-focus-skill {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8a6d1a;
+}
+
+.lp-step-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.lp-stat {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.lp-stat.lp-progress {
+  color: #3f7a4f;
+  font-weight: 700;
+}
+
+.lp-progress-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: var(--border);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.lp-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: #6f9a68;
+  transition: width 0.5s ease;
+}
+
+.lp-step-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.lp-btn-toggle {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.lp-btn-toggle:hover {
+  background: #e4f1e9;
+  color: var(--green-dark);
+}
+
+.lp-btn-toggle.completed {
+  background: #e4f1e9;
+  border-color: #c9e6d6;
+  color: #3f7a4f;
+}
+
+/* ── Skill Assessment ────────────────────────────────────── */
+.lp-skill-analysis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.lp-skill-group h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lp-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lp-skill-tag {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.lp-tag-strong {
+  background: #3f7a4f;
+}
+
+.lp-tag-weak {
+  background: #d64545;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1050px) {
+  .lp-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lp-skill-analysis {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .lp-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .lp-actions {
+    margin-top: 10px;
+  }
+
+  .lp-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-page {
+    padding: 20px;
+  }
+
+  .lp-step-content {
+    margin-left: 20px;
+    padding: 16px;
+  }
+
+  .lp-connector {
+    left: 22px;
+  }
+
+  .lp-step-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .lp-step-actions {
+    flex-direction: column;
+  }
+
+  .lp-skill-analysis {
+    grid-template-columns: 1fr;
+  }
+}
