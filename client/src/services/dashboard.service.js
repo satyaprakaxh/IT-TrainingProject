@@ -1,4 +1,3 @@
-
 import api from './api';
 
 export const dashboardService = {
@@ -9,6 +8,11 @@ export const dashboardService = {
 
   getSkillMap: async () => {
     const response = await api.get('/dashboard/skill-map');
+    return response.data;
+  },
+
+  getWeeklyInsight: async () => {
+    const response = await api.get('/ai/weekly-insight');
     return response.data;
   },
 

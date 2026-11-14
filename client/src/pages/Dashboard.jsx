@@ -82,7 +82,13 @@ export default function Dashboard() {
   const [pathLoading, setPathLoading] = useState(true);
   const [pathError, setPathError] = useState("");
 
+  const [weeklyInsight, setWeeklyInsight] = useState("");
+  const [insightLoading, setInsightLoading] = useState(false);
+
   const [question, setQuestion] = useState("");
+  const [mentorAnswer, setMentorAnswer] = useState("");
+  const [mentorLoading, setMentorLoading] = useState(false);
+  const [mentorError, setMentorError] = useState("");
   const [message, setMessage] = useState("");
 
   // Fetch dashboard statistics
@@ -313,11 +319,27 @@ export default function Dashboard() {
     }
   }, [skills, skillsLoading]);
 
+  // Fetch weekly AI insight
+  const fetchWeeklyInsight = useCallback(async () => {
+    try {
+      setInsightLoading(true);
+      const data = await dashboardService.getWeeklyInsight();
+      if (data.success && data.insight) {
+        setWeeklyInsight(data.insight);
+      }
+    } catch (error) {
+      console.warn("Failed to fetch weekly insight:", error);
+    } finally {
+      setInsightLoading(false);
+    }
+  }, []);
+
   // Load dashboard data
   useEffect(() => {
     fetchStats();
     fetchSkills();
-  }, [fetchStats, fetchSkills]);
+    fetchWeeklyInsight();
+  }, [fetchStats, fetchSkills, fetchWeeklyInsight]);
 
   // Build learning path after skills load
   useEffect(() => {
@@ -352,14 +374,31 @@ export default function Dashboard() {
   }
 
   // AI mentor message
-  function handleSend() {
-    if (!question.trim()) return;
+  async function handleSend() {
+    const q = question.trim();
+    if (!q || mentorLoading) return;
 
-    setMessage(
-      "Your question has been received. AI mentor integration will be connected next."
-    );
+    setMentorLoading(true);
+    setMentorError("");
+    setMentorAnswer("");
 
-    setQuestion("");
+    try {
+      const data = await dashboardService.chatWithAI(q);
+      if (data.success && data.reply) {
+        setMentorAnswer(data.reply);
+      } else {
+        setMentorError(data.message || "No reply from AI mentor.");
+      }
+      setQuestion("");
+    } catch (error) {
+      console.error("AI mentor error:", error);
+      setMentorError(
+        error.response?.data?.message ||
+          "AI mentor could not generate a response right now. Please try again."
+      );
+    } finally {
+      setMentorLoading(false);
+    }
   }
 
   // Course-specific explanation
@@ -559,19 +598,28 @@ export default function Dashboard() {
         {/* AI Insight */}
         <section className="dashboard-insight-card">
           <div className="dashboard-insight-heading">
-            <Sparkles size={20} />
+            <Sparkles size={20} className={insightLoading ? "dashboard-insight-spinner" : ""} />
             <h3>Weekly AI insight</h3>
           </div>
 
-          {skills.length > 0 ? (
+          {weeklyInsight ? (
+            <p>{weeklyInsight}</p>
+          ) : skills.length > 0 && strongest ? (
             <p>
-              {strongest.skill} is your strongest skill at{" "}
-              {strongest.score}%.
-              {" "}
-              {weakest.skill} is currently your weakest skill at{" "}
-              {weakest.score}%.
-              {" "}
-              Spend 15 minutes practising it to improve your performance.
+              {skills.length > 1 && weakest && strongest.skill !== weakest.skill ? (
+                <>
+                  {strongest.skill} is your strongest skill at{" "}
+                  {strongest.score}%.{" "}
+                  {weakest.skill} is currently your weakest skill at{" "}
+                  {weakest.score}%.{" "}
+                  Spend 15 minutes practising it to improve your performance.
+                </>
+              ) : (
+                <>
+                  {strongest.skill} is currently your evaluated skill at{" "}
+                  {strongest.score}%. Complete assessments in other topics to broaden your skill profile!
+                </>
+              )}
             </p>
           ) : (
             <p>
@@ -583,6 +631,27 @@ export default function Dashboard() {
           <div className="dashboard-mentor">
             <h4>Ask your AI mentor</h4>
 
+            {mentorAnswer && (
+              <div className="dashboard-mentor-reply">
+                <div className="dashboard-mentor-reply-header">
+                  <span>🤖 AI Mentor</span>
+                  <button
+                    type="button"
+                    className="dashboard-mentor-reply-clear"
+                    onClick={() => setMentorAnswer("")}
+                    title="Dismiss"
+                  >
+                    ×
+                  </button>
+                </div>
+                <p>{mentorAnswer}</p>
+              </div>
+            )}
+
+            {mentorError && (
+              <p className="dashboard-mentor-error">{mentorError}</p>
+            )}
+
             <div className="dashboard-mentor-input">
               <input
                 value={question}
@@ -590,14 +659,21 @@ export default function Dashboard() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSend();
                 }}
-                placeholder="Ask a question..."
+                placeholder={mentorLoading ? "AI is thinking..." : "Ask a question..."}
+                disabled={mentorLoading}
               />
 
               <button
+                type="button"
                 onClick={handleSend}
+                disabled={mentorLoading || !question.trim()}
                 aria-label="Send question"
               >
-                <Send size={17} />
+                {mentorLoading ? (
+                  <Sparkles size={17} className="dashboard-insight-spinner" />
+                ) : (
+                  <Send size={17} />
+                )}
               </button>
             </div>
           </div>
