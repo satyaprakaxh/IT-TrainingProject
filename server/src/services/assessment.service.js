@@ -105,6 +105,11 @@ async function createAssessment(data, userId) {
           points: question.points,
           explanation: question.explanation,
           correctAnswer: question.correctAnswer,
+          acceptedAnswers: {
+            create: (question.acceptedAnswers || []).map(answer => ({
+              answerText: answer
+            }))
+          },
           options: {
             create: (question.options || []).map(option => ({
               optionText: option.optionText,
@@ -369,23 +374,28 @@ async function updateAssessment(id, data, userId, userRole) {
           }
         }
 
-        await tx.question.create({
-          data: {
-            assessmentId: id,
-            questionText: question.questionText,
-            type: question.type,
-            difficulty: question.difficulty,
-            points: question.points,
-            explanation: question.explanation,
-            correctAnswer: question.correctAnswer,
-            options: {
-              create: (question.options || []).map(option => ({
-                optionText: option.optionText,
-                isCorrect: option.isCorrect
-              }))
+      await tx.question.create({
+            data: {
+              assessmentId: id,
+              questionText: question.questionText,
+              type: question.type,
+              difficulty: question.difficulty,
+              points: question.points,
+              explanation: question.explanation,
+              correctAnswer: question.correctAnswer,
+              acceptedAnswers: {
+                create: (question.acceptedAnswers || []).map(answer => ({
+                  answerText: answer
+                }))
+              },
+              options: {
+                create: (question.options || []).map(option => ({
+                  optionText: option.optionText,
+                  isCorrect: option.isCorrect
+                }))
+              }
             }
-          }
-        });
+          });
       }
     }
 
@@ -443,6 +453,11 @@ async function submitAssessment(assessmentId, userId, answers) {
           id: true,
           isCorrect: true
         }
+      },
+      acceptedAnswers: {
+        select: {
+          answerText: true
+        }
       }
     }
   });
@@ -479,10 +494,18 @@ async function submitAssessment(assessmentId, userId, answers) {
 
       isCorrect = Boolean(option && option.isCorrect);
     } else {
+      // SHORT_ANSWER or TRUE_FALSE: check against accepted answers
       const provided = (answer.answerText || '').trim().toLowerCase();
-      const expected = (question.correctAnswer || '').trim().toLowerCase();
+      const accepted = (question.acceptedAnswers || [])
+        .map(a => a.answerText.trim().toLowerCase())
+        .filter(Boolean);
 
-      isCorrect = provided !== '' && provided === expected;
+      // Also include correctAnswer as an accepted answer for backward compatibility
+      if (question.correctAnswer) {
+        accepted.push(question.correctAnswer.trim().toLowerCase());
+      }
+
+      isCorrect = provided !== '' && accepted.some(ans => ans === provided);
     }
 
     const pointsAwarded = isCorrect ? question.points : 0;
@@ -637,13 +660,21 @@ async function getAttemptById(attemptId, userId) {
               id: true,
               questionText: true,
               type: true,
-              points: true
+              points: true,
+              correctAnswer: true,
+              acceptedAnswers: {
+                select: {
+                  answerText: true
+                }
+              },
+              explanation: true
             }
           },
           selectedOption: {
             select: {
               id: true,
-              optionText: true
+              optionText: true,
+              isCorrect: true
             }
           }
         }

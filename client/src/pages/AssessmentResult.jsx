@@ -272,21 +272,40 @@ function ReviewItem({ response, index }) {
   const isCorrect = response.isCorrect;
   const q = response.question || {};
   const selectedOption = response.selectedOption;
+  const correctAnswer = q.correctAnswer || '';
+  const acceptedAnswers = q.acceptedAnswers || [];
+  const explanation = q.explanation || '';
+
   const selectedText =
     selectedOption?.optionText ||
     response.answerText ||
     'Not answered';
 
+  // Determine correct answer text for display
+  let correctDisplayText = '';
+  if (q.type === 'MCQ') {
+    correctDisplayText = selectedOption?.isCorrect
+      ? selectedOption.optionText
+      : (q.options || []).find((o) => o.isCorrect)?.optionText || correctAnswer;
+  } else if (q.type === 'TRUE_FALSE') {
+    correctDisplayText = correctAnswer || 'True/False';
+  } else {
+    // SHORT_ANSWER - show all accepted answers
+    const allAnswers = [correctAnswer, ...acceptedAnswers].filter(Boolean);
+    correctDisplayText = allAnswers.join(' / ');
+  }
+
   return (
     <div
       style={{
-        padding: '14px 18px',
-        border: '1px solid #e3e6e3',
+        padding: '16px 20px',
+        border: `1px solid ${isCorrect ? '#c9e6d6' : '#f5bcbc'}`,
         borderRadius: 14,
-        background: 'white',
+        background: isCorrect ? '#e4f1e9' : '#fff',
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 12
+        gap: 12,
+        marginBottom: 0
       }}
     >
       <span
@@ -294,8 +313,8 @@ function ReviewItem({ response, index }) {
           width: 26,
           height: 26,
           borderRadius: '50%',
-          background: isCorrect ? '#e4f1e9' : '#fdecec',
-          color: isCorrect ? '#3f7a4f' : '#d64545',
+          background: isCorrect ? '#3f7a4f' : '#d64545',
+          color: '#fff',
           display: 'grid',
           placeItems: 'center',
           fontSize: 13,
@@ -309,27 +328,86 @@ function ReviewItem({ response, index }) {
         <div style={{ fontSize: 12, color: '#849087', marginBottom: 4 }}>
           Question {index} • {q.type}
         </div>
-        <div style={{ fontSize: 14, color: '#202820', fontWeight: 600, marginBottom: 6 }}>
+        <div style={{ fontSize: 14, color: '#202820', fontWeight: 600, marginBottom: 8 }}>
           {q.questionText}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#3a3a3a' }}>
-          <span>Your answer:</span>
-          <span
+
+        {/* Your answer */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#849087', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>
+            Your Answer
+          </div>
+          <div
             style={{
-              fontWeight: 600,
-              color: isCorrect ? '#3f7a4f' : '#d64545'
+              padding: '8px 12px',
+              borderRadius: 8,
+              background: isCorrect ? '#e4f1e9' : '#fdecec',
+              border: `1px solid ${isCorrect ? '#c9e6d6' : '#f5bcbc'}`,
+              color: '#202820',
+              fontSize: 13
             }}
           >
             {selectedText}
-          </span>
-          {isCorrect === false && response.pointsAwarded == null ? (
-            <span style={{ color: '#849087', fontSize: 11 }}>0 pts</span>
-          ) : (
-            <span style={{ color: '#3f7a4f', fontSize: 11, fontWeight: 700 }}>
-              {response.pointsAwarded} pts
-            </span>
-          )}
+          </div>
         </div>
+
+        {/* Correct answer */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#849087', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>
+            Correct Answer
+          </div>
+          <div
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              background: '#e8f5e9',
+              border: '1px solid #c9e6d6',
+              color: '#3f7a4f',
+              fontSize: 13,
+              fontWeight: 600
+            }}
+          >
+            {correctDisplayText || '—'}
+          </div>
+        </div>
+
+        {/* Marks */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: '#849087', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>
+            Marks Obtained
+          </div>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 800,
+              color: isCorrect ? '#3f7a4f' : '#d64545'
+            }}
+          >
+            {response.pointsAwarded} / {q.points} pts
+          </div>
+        </div>
+
+        {/* Explanation */}
+        {explanation && (
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 11, color: '#849087', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 }}>
+              Explanation
+            </div>
+            <div
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                background: '#fdecec',
+                border: '1px solid #f5bcbc',
+                color: '#d64545',
+                fontSize: 13,
+                fontStyle: 'italic'
+              }}
+            >
+              {explanation}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

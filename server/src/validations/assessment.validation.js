@@ -33,6 +33,10 @@ const createAssessmentSchema = z.object({
         points: z.number().int().positive('Points must be a positive integer').default(1),
         explanation: z.string().max(5000).optional().nullable(),
         correctAnswer: z.string().max(5000).optional().nullable(),
+        acceptedAnswers: z
+          .array(z.string().max(5000, 'Accepted answer is too long'))
+          .optional()
+          .default([]),
         options: z
           .array(
             z.object({

@@ -386,12 +386,25 @@ model Question {
   explanation String? @db.Text
   correctAnswer String? @db.Text
 
-  options   QuestionOption[]
-  responses QuestionResponse[]
+  options          QuestionOption[]
+  responses        QuestionResponse[]
+  acceptedAnswers  AcceptedAnswer[]
 
   createdAt DateTime @default(now())
 
   @@index([assessmentId])
+}
+
+model AcceptedAnswer {
+  id        Int @id @default(autoincrement())
+  questionId Int
+
+  question  Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerText String @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([questionId])
 }
 
 model QuestionOption {
