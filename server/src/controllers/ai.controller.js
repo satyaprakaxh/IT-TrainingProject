@@ -1,5 +1,9 @@
+const { OpenAI } = require("openai");
 
-const { GoogleGenAI } = require("@google/genai");
+const client = new OpenAI({
+  baseURL: "https://router.huggingface.co/v1",
+  apiKey: process.env.HF_TOKEN
+});
 
 const chatWithAI = async (req, res) => {
   try {
@@ -9,32 +13,29 @@ const chatWithAI = async (req, res) => {
     if (typeof question !== "string" || !question.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a valid question.",
+        message: "Please enter a valid question."
       });
     }
 
     // Check API key
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.HF_TOKEN) {
       return res.status(500).json({
         success: false,
-        message: "Gemini API key is missing from the backend.",
+        message: "Hugging Face API key is missing from the backend."
       });
     }
 
-    // Initialize Gemini
-    const ai = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+    // Generate AI response via Hugging Face router (Llama-3.2)
+    const chatCompletion = await client.chat.completions.create({
+      model: "meta-llama/Llama-3.2-3B-Instruct:featherless-ai",
+      messages: [{ role: "user", content: question.trim() }]
     });
 
-    // Generate AI response
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: question.trim(),
-    });
+    const reply = chatCompletion.choices[0].message.content;
 
     return res.status(200).json({
       success: true,
-      reply: response.text,
+      reply
     });
 
   } catch (error) {
@@ -42,7 +43,7 @@ const chatWithAI = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "AI could not generate a response. Please try again.",
+      message: "AI could not generate a response. Please try again."
     });
   }
 };
